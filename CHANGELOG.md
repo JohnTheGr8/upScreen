@@ -1,4 +1,11 @@
 Changelog
+========
+
+## Version 1.5
+
+- Upload image files from right-click menu
+- Add multiple accounts to upload to, switch from right-click menu
+- Switched to JSON config files (using json.net)
 
 ## Version 1.4
 
