@@ -25,8 +25,9 @@ namespace upScreen
         {
             try
             {
-                string udpaterPath = Application.StartupPath + @"\updater.exe";
-                Process.Start(udpaterPath);
+                string updaterPath = Application.StartupPath + @"\updater.exe";
+                var pi = new ProcessStartInfo(updaterPath) {Verb = "runas"};
+                Process.Start(pi);
             }
             catch { }
 
