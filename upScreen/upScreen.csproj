@@ -179,7 +179,9 @@
   <ItemGroup>
     <None Include="Resources\btn_donate_SM.gif" />
     <Content Include="Resources\upscreen.ico" />
-    <Content Include="upScreen.ico" />
+    <Content Include="upScreen.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

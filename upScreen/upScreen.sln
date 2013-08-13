@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "upScreen", "upScreen.csproj", "{08CAD61C-0500-4D2D-A86F-F4698054F539}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "upScreen_Setup", "..\upScreen_Setup\upScreen_Setup.vdproj", "{E6ECB6D6-855E-4238-908C-6008025E6E18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,8 @@ Global
 		{08CAD61C-0500-4D2D-A86F-F4698054F539}.Debug|x86.Build.0 = Debug|x86
 		{08CAD61C-0500-4D2D-A86F-F4698054F539}.Release|x86.ActiveCfg = Release|x86
 		{08CAD61C-0500-4D2D-A86F-F4698054F539}.Release|x86.Build.0 = Release|x86
+		{E6ECB6D6-855E-4238-908C-6008025E6E18}.Debug|x86.ActiveCfg = Debug
+		{E6ECB6D6-855E-4238-908C-6008025E6E18}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
