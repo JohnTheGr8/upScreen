@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
-using upScreen.Classes;
+using upScreenLib.LogConsole;
 using upScreen.Forms;
 using upScreenLib;
 

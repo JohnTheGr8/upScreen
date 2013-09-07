@@ -11,9 +11,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.IO;
-using System.Text;
 
-namespace upScreen.Classes
+namespace upScreenLib.LogConsole
 {
     public enum l
     {
@@ -24,7 +23,7 @@ namespace upScreen.Classes
         Client = 5
     }
 
-    class Log
+    public class Log
     {
         private static ConsoleColor WHITE = ConsoleColor.White;
         private static ConsoleColor RED = ConsoleColor.Red;

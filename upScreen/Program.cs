@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
-using upScreen.Classes;
+using upScreenLib.LogConsole;
 using Microsoft.Win32;
 using System.IO;
 using upScreenLib;

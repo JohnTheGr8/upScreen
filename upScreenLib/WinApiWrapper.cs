@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace ApiWrapper
 {
-    public class Window
+    internal class Window
     {
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT

@@ -11,9 +11,9 @@ using System.IO;
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
-namespace upScreen.Classes
+namespace upScreenLib.LogConsole
 {
-    class aConsole
+    public class aConsole
     {
         [DllImport("kernel32.dll", EntryPoint = "GetStdHandle", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         private static extern IntPtr GetStdHandle(int nStdHandle);

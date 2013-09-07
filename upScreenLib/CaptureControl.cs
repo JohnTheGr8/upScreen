@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
-using upScreen.Classes;
+using upScreenLib.LogConsole;
 
 namespace upScreenLib
 {
