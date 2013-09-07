@@ -39,6 +39,13 @@ namespace upScreen
                 //else
                     StartUpError();     // on failure, call StartUpError();
             };
+            // Set UrlCaptureFailed handler
+            CaptureControl.UrlCaptureFailed += (o, args) =>
+            {
+                // Warn user and exit.
+                MessageBox.Show("The provided URL could not be processed.", "upScreen Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Common.KillOrWait(true);
+            };
         }
 
         #region Form Event Handlers
@@ -160,7 +167,7 @@ namespace upScreen
                 _donedrawing = true;
             }
             else if (e.Button == MouseButtons.Right)
-                clipboardToolStripMenuItem.Enabled = (Clipboard.ContainsImage() || Common.ImageFileInClipboard);
+                clipboardToolStripMenuItem.Enabled = (Clipboard.ContainsImage() || Common.ImageFileInClipboard || Common.ImageUrlInClipboard);
 
             if (_donedrawing)
             {
@@ -219,7 +226,8 @@ namespace upScreen
         // Capture from clipboard
         private void clipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!Clipboard.ContainsImage() && !Common.ImageFileInClipboard) return;
+            if (!Clipboard.ContainsImage() && !Common.ImageFileInClipboard && !Common.ImageUrlInClipboard)
+                return;
 
             _otherformopen = true;
             Hide();

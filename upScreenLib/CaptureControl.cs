@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.IO;
@@ -15,6 +16,8 @@ namespace upScreenLib
         private static readonly Thread tUpload = new Thread(UploadImage);
         // Event raised when the upload has been completed
         public static event EventHandler<EventArgs> UploadComplete;
+        // Event raised when the given url cannot be processed correctly
+        public static event EventHandler<EventArgs> UrlCaptureFailed;
 
         #region Capture Full Screen
 
@@ -314,8 +317,18 @@ namespace upScreenLib
         /// </summary>
         public static void GetFromClipboard()
         {
-            // Load the image from clipboard
-            CapturedImage.Image = Clipboard.ContainsImage() ? Clipboard.GetImage() : Image.FromFile(Clipboard.GetFileDropList()[0]);
+            // Load the image from a copied image
+            if (Clipboard.ContainsImage())
+                CapturedImage.Image = Clipboard.GetImage();
+            // Load the image from a copied image file
+            else if (Clipboard.ContainsFileDropList())
+                CapturedImage.Image = Image.FromFile(Clipboard.GetFileDropList()[0]);
+            // Load the image from a copied image url
+            else if (Common.ImageUrlInClipboard)
+                CapturedImage.Image = GetFromUrl(Clipboard.GetText());
+
+            // Prevent null reference exception
+            if (CapturedImage.Image == null) return;
 
             Common.OtherFormOpen = true;
             // Generate a random name for the file
@@ -330,6 +343,36 @@ namespace upScreenLib
             CheckStartUpload();
             // raise UploadComplete to start looking for software updates
             UploadComplete(null, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Download and return image from url
+        /// </summary>
+        /// <param name="url">url to image</param>        
+        private static Image GetFromUrl(string url)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "HEAD";
+            request.ServicePoint.Expect100Continue = false;
+            request.ContentType = "application/x-www-form-urlencoded";            
+
+            using (var response = request.GetResponse())
+            {
+                var fileType = response.Headers[HttpResponseHeader.ContentType];                                
+                var allowedTypes = new List<string> { "image/png", "image/jpeg", "image/jpg", "image/gif" };
+                
+                //Compare web file MIME to valid types
+                if (allowedTypes.Contains(fileType))
+                {
+                    //Download file to MemoryStream
+                    var imgBytes = new WebClient().DownloadData(url);
+                    var memStream = new MemoryStream(imgBytes);
+                    return Image.FromStream(memStream);
+                }
+            }
+            // Something went wrong...
+            UrlCaptureFailed(null, EventArgs.Empty);
+            return null;
         }
 
         #endregion

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Drawing;
@@ -164,7 +165,22 @@ namespace upScreenLib
         {
             get
             {
-                return !Clipboard.ContainsFileDropList() ? false : IsValidImage(Clipboard.GetFileDropList()[0]);
+                return Clipboard.ContainsFileDropList() && IsValidImage(Clipboard.GetFileDropList()[0]);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the clipboard contains a valid url
+        /// </summary>        
+        public static bool ImageUrlInClipboard
+        {
+            get
+            {
+                if (!Clipboard.ContainsText()) return false;
+
+                var re = new Regex(@"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$");
+                // Does the Clipboard text match our url pattern?
+                return re.IsMatch(Clipboard.GetText());
             }
         }
 
