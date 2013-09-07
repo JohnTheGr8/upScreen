@@ -54,18 +54,6 @@
     <ApplicationIcon>upScreen.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>.\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Renci.SshNet">
-      <HintPath>.\Renci.SshNet.dll</HintPath>
-    </Reference>
-    <Reference Include="Starksoft.Net.Ftp">
-      <HintPath>.\Starksoft.Net.Ftp.dll</HintPath>
-    </Reference>
-    <Reference Include="Starksoft.Net.Proxy">
-      <HintPath>.\Starksoft.Net.Proxy.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -73,16 +61,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\upScreenLib\CaptureControl.cs" />
-    <Compile Include="Classes\upScreenLib\CaptureedImage.cs" />
-    <Compile Include="Classes\upScreenLib\Client.cs" />
-    <Compile Include="Classes\upScreenLib\ClientItem.cs" />
-    <Compile Include="Classes\upScreenLib\Common.cs" />
-    <Compile Include="Classes\Console\aConsole.cs" />
-    <Compile Include="Classes\Console\Log.cs" />
-    <Compile Include="Classes\upScreenLib\Enums.cs" />
-    <Compile Include="Classes\upScreenLib\Profile.cs" />
-    <Compile Include="Classes\upScreenLib\Settings.cs" />
     <Compile Include="Forms\frmAddAccount.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -109,7 +87,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Classes\WinApiWrapper.cs" />
     <Compile Include="Forms\SelectionBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -182,6 +159,12 @@
     <Content Include="upScreen.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\upScreenLib\upScreenLib.csproj">
+      <Project>{74CA3E0C-5F42-497C-8DB2-FD512A7E6860}</Project>
+      <Name>upScreenLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
