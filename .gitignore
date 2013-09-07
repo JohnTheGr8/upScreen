@@ -2,6 +2,10 @@
 upScreen/bin
 upScreen/obj
 
+# upScreenLib
+upScreenLib/bin
+upScreenLib/obj
+
 # Setup project
 upScreen_Setup
 
