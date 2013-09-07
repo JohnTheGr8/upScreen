@@ -1,2 +1,10 @@
+# bin, obj folders
 upScreen/bin
 upScreen/obj
+
+# Setup project
+upScreen_Setup
+
+# Resharper
+_ReSharper.*
+*.user
