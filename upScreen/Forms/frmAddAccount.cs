@@ -141,7 +141,7 @@ namespace upScreen.Forms
             Settings.Profiles.ForEach(p => p.IsDefaultAccount = false);
 
             // Add the new profile to the list of profiles
-            Settings.Profiles.Add(new SettingsProfile
+            Settings.Profiles.Add(new Profile
             {
                 // Account info
                 Protocol = _ftpOrSftp ? FtpProtocol.FTP : FtpProtocol.SFTP,

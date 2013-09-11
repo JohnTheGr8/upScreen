@@ -356,7 +356,8 @@ namespace upScreen
                             Password = Settings.Profiles[i].Password,
                             Port = Settings.Profiles[i].Port,
 
-                            RemotePath = Settings.Profiles[i].RemotePaths[Settings.Profiles[i].DefaultFolder],
+                            DefaultFolder = Settings.Profiles[i].DefaultFolder,
+                            RemotePaths = Settings.Profiles[i].RemotePaths,
                             HttpPath = Settings.Profiles[i].HttpPath,
 
                             Extension = Settings.Profiles[i].Extension,

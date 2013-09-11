@@ -1,12 +1,43 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace upScreenLib
 {
-    public class Profile : SettingsProfile
-    {        
+    public class Profile
+    {
+        public string Host;
+
+        public string Username;
+
+        public string Password;
+
+        public int Port = 21;
+
+        public List<string> RemotePaths = new List<string>();
+
+        public string HttpPath;
+
+        public ImageExtensions Extension = ImageExtensions.PNG;
+
+        public int FileLenght = 5;
+
+        public string Pattern;
+
+        public FtpProtocol Protocol = FtpProtocol.FTP;
+
+        public FtpsMethod FtpsInvokeMethod;
+
+        public int DefaultFolder = 0;
+
+        public bool IsDefaultAccount = false;
+
+        [JsonIgnore]
         public static bool FromFileMenu { get; set; }
+
+        [JsonIgnore]
         public static List<string> ArgFiles = new List<string>();
 
+        [JsonIgnore]
         public string RemotePath
         {
             get { return RemotePaths[DefaultFolder]; }
@@ -51,38 +82,5 @@ namespace upScreenLib
             RemotePath = null;
             HttpPath = null;
         }
-    }
-
-    /// <summary>
-    /// A profile class with the info that 
-    /// should get saved in the config file
-    /// </summary>
-    public class SettingsProfile
-    {
-        public string Host;
-
-        public string Username;
-
-        public string Password;
-
-        public int Port = 21;
-
-        public List<string> RemotePaths = new List<string>();
-
-        public string HttpPath;
-
-        public ImageExtensions Extension = ImageExtensions.PNG;
-
-        public int FileLenght = 5;
-
-        public string Pattern;
-
-        public FtpProtocol Protocol = FtpProtocol.FTP;
-
-        public FtpsMethod FtpsInvokeMethod;
-
-        public int DefaultFolder = 0;
-
-        public bool IsDefaultAccount = false;
     }
 }
