@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace upScreenLib
@@ -13,9 +15,7 @@ namespace upScreenLib
 
         public int Port = 21;
 
-        public List<string> RemotePaths = new List<string>();
-
-        public string HttpPath;
+        public List<RemoteFolder> RemoteFolders = new List<RemoteFolder>();
 
         public ImageExtensions Extension = ImageExtensions.PNG;
 
@@ -38,16 +38,15 @@ namespace upScreenLib
         public static List<string> ArgFiles = new List<string>();
 
         [JsonIgnore]
-        public string RemotePath
+        public string RemoteFolder
         {
-            get { return RemotePaths[DefaultFolder]; }
-            set
-            {
-                if (RemotePaths.Count == 0)
-                    RemotePaths.Add(value);
-                else
-                    RemotePaths[0] = value;
-            }
+            get { return RemoteFolders[DefaultFolder].Folder; }
+        }
+
+        [JsonIgnore]
+        public string RemoteHttpPath
+        {
+            get { return RemoteFolders[DefaultFolder].HttpPath; }
         }
 
         /// <summary>
@@ -62,25 +61,34 @@ namespace upScreenLib
         }
 
         /// <summary>
-        /// Load the given paths
+        /// Convert from the old RemotePaths that only contained folders.
+        /// This is only for compatibility reasons with older config files.
         /// </summary>
-        public void AddPaths(string remote, string http)
+        [OnDeserialized]
+        internal void OnDeserializedConvertRemotePaths(StreamingContext context)
         {
-            RemotePath = remote;
+            if (RemotePaths.Count > 0 && RemoteFolders.Count <= 0)
+                RemoteFolders.Add(new RemoteFolder(RemotePaths[0], HttpPath));
+        }
+
+        [Obsolete("Not used anymore")]
+        public List<string> RemotePaths = new List<string>();
+        
+        [Obsolete("Not used anymore")]
+        public string HttpPath;
+    }
+
+    public class RemoteFolder
+    {
+        public RemoteFolder(string folder, string http)
+        {
+            Folder = folder;
             HttpPath = http;
         }
 
-        /// <summary>
-        /// Clear all current profile info
-        /// </summary>
-        public void Clear()
-        {
-            Host = null;
-            Username = null;
-            Password = null;
-            Port = 21;
-            RemotePath = null;
-            HttpPath = null;
-        }
+        // The folder path (relative to user's root)
+        public string Folder;
+        // The http path to the folder
+        public string HttpPath;
     }
 }

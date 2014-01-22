@@ -42,6 +42,7 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pbSelection = new upScreen.SelectionBox();
+            this.folderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,6 +53,7 @@
             this.clipboardToolStripMenuItem,
             this.toolStripSeparator1,
             this.accountToolStripMenuItem,
+            this.folderToolStripMenuItem,
             this.toolStripSeparator2,
             this.tmOpenInBrowser,
             this.tmCopyLink,
@@ -59,7 +61,7 @@
             this.optionsToolStripMenuItem,
             this.cancelToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(192, 198);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(192, 220);
             // 
             // fullScreenToolStripMenuItem
             // 
@@ -140,6 +142,12 @@
             this.pbSelection.TabIndex = 1;
             this.pbSelection.Visible = false;
             // 
+            // folderToolStripMenuItem
+            // 
+            this.folderToolStripMenuItem.Name = "folderToolStripMenuItem";
+            this.folderToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.folderToolStripMenuItem.Text = "Folder";
+            // 
             // frmCapture
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -187,6 +195,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem accountToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem folderToolStripMenuItem;
     }
 }
 

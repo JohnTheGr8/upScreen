@@ -45,8 +45,6 @@
             this.gPaths = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
             this.tHttpPath = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.tRemotePath = new System.Windows.Forms.TextBox();
             this.tFolderTree = new System.Windows.Forms.TreeView();
             this.bCancel = new System.Windows.Forms.Button();
             this.gAccount.SuspendLayout();
@@ -201,8 +199,6 @@
             // 
             this.gPaths.Controls.Add(this.label4);
             this.gPaths.Controls.Add(this.tHttpPath);
-            this.gPaths.Controls.Add(this.label1);
-            this.gPaths.Controls.Add(this.tRemotePath);
             this.gPaths.Controls.Add(this.tFolderTree);
             this.gPaths.Enabled = false;
             this.gPaths.ImeMode = System.Windows.Forms.ImeMode.NoControl;
@@ -230,35 +226,20 @@
             this.tHttpPath.TabIndex = 8;
             this.tHttpPath.TextChanged += new System.EventHandler(this.tHttpPath_TextChanged);
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 148);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(71, 13);
-            this.label1.TabIndex = 57;
-            this.label1.Text = "Remote path:";
-            // 
-            // tRemotePath
-            // 
-            this.tRemotePath.Enabled = false;
-            this.tRemotePath.Location = new System.Drawing.Point(99, 145);
-            this.tRemotePath.Name = "tRemotePath";
-            this.tRemotePath.Size = new System.Drawing.Size(231, 20);
-            this.tRemotePath.TabIndex = 7;
-            this.tRemotePath.Text = "/";
-            // 
             // tFolderTree
             // 
+            this.tFolderTree.CheckBoxes = true;
             this.tFolderTree.Location = new System.Drawing.Point(15, 20);
             this.tFolderTree.Name = "tFolderTree";
-            this.tFolderTree.Size = new System.Drawing.Size(315, 110);
+            this.tFolderTree.Size = new System.Drawing.Size(315, 145);
             this.tFolderTree.TabIndex = 6;
+            this.tFolderTree.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tFolderTree_AfterCheck);
             this.tFolderTree.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.tFolderTree_AfterExpand);
             this.tFolderTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tFolderTree_AfterSelect);
             // 
             // bCancel
             // 
+            this.bCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.bCancel.Location = new System.Drawing.Point(208, 398);
             this.bCancel.Name = "bCancel";
             this.bCancel.Size = new System.Drawing.Size(75, 23);
@@ -272,6 +253,7 @@
             this.AcceptButton = this.bTest;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.bCancel;
             this.ClientSize = new System.Drawing.Size(375, 433);
             this.Controls.Add(this.bCancel);
             this.Controls.Add(this.gPaths);
@@ -312,8 +294,6 @@
         private System.Windows.Forms.GroupBox gPaths;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox tHttpPath;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox tRemotePath;
         private System.Windows.Forms.TreeView tFolderTree;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button bCancel;

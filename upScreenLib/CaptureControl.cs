@@ -241,7 +241,7 @@ namespace upScreenLib
         public static void DoStartUpload()
         {
             CapturedImage.LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + CapturedImage.Name);
-            CapturedImage.RemotePath = Common.Combine(Common.Profile.RemotePath, CapturedImage.Name);
+            CapturedImage.RemotePath = Common.Combine(Common.Profile.RemoteFolder, CapturedImage.Name);
             // Start the upload in a separate thread
             tUpload.Start();
         }

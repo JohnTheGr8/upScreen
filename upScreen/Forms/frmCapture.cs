@@ -24,6 +24,8 @@ namespace upScreen
         private readonly frmAddAccount _fAccount = new frmAddAccount();
         private frmSettings _fSettings = new frmSettings();
 
+        public static int _activeAccount = 0;
+
         #endregion
 
         public frmCapture()
@@ -81,6 +83,9 @@ namespace upScreen
             tKillPrevInstances.Start();
 
             RefreshAccountList();
+            RefreshFolderList();
+
+            _activeAccount = Settings.DefaultProfile;
 
             // If uploading a file, hide the form and start uploading
             if (Profile.FromFileMenu)
@@ -251,11 +256,12 @@ namespace upScreen
             Hide();
             _fSettings = new frmSettings();
             _fSettings.ShowDialog();
-            // fOptions.ShowDialog();
+
             pbSelection.Visible = false;
             CaptureControl.GetBackgroundImage();
             Show();
             RefreshAccountList();
+            RefreshFolderList();
         }
 
         private void cancelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -319,14 +325,14 @@ namespace upScreen
             _otherformopen = true;
             _onClick = false;
 
-            if (InvokeRequired)
-                Invoke(new MethodInvoker(Hide));
-            else
-                Hide();
+            Invoke(new MethodInvoker(() =>
+                {
+                    Hide();
 
-            _fAccount.ShowDialog();
-            pbSelection.Visible = false;
-            Show();
+                    _fAccount.ShowDialog();
+                    pbSelection.Visible = false;
+                    Show();
+                }));
         }
 
         /// <summary>
@@ -348,28 +354,46 @@ namespace upScreen
 
                         int i = accountToolStripMenuItem.DropDownItems.IndexOf(item);
                         Client.Disconnect();
-                        Common.Profile = new Profile
-                        {
-                            Protocol = Settings.Profiles[i].Protocol,
-                            Host = Settings.Profiles[i].Host,
-                            Username = Settings.Profiles[i].Username,
-                            Password = Settings.Profiles[i].Password,
-                            Port = Settings.Profiles[i].Port,
-
-                            DefaultFolder = Settings.Profiles[i].DefaultFolder,
-                            RemotePaths = Settings.Profiles[i].RemotePaths,
-                            HttpPath = Settings.Profiles[i].HttpPath,
-
-                            Extension = Settings.Profiles[i].Extension,
-                            FileLenght = Settings.Profiles[i].FileLenght
-                        };
+                        // Switch to profile at index i
+                        Common.Profile = new Profile();
+                        Common.Profile = Settings.Profiles[i];
 
                         Client.CheckAccount();
+
+                        _activeAccount = i;
+                        RefreshFolderList();
                     };
-                if (Settings.ProfileTitles[Settings.DefaultProfile] == p)
+                if (Settings.ProfileTitles[_activeAccount] == p)
                     item.Checked = true;
 
                 accountToolStripMenuItem.DropDownItems.Add(item);                
+            }
+        }
+
+        /// <summary>
+        /// Refresh the list of folders in the right-click menu
+        /// </summary>
+        public void RefreshFolderList()
+        {
+            folderToolStripMenuItem.DropDownItems.Clear();
+            foreach (string p in Settings.Profiles[_activeAccount].RemoteFolders.Select(x => x.Folder))
+            {
+                var item = new ToolStripMenuItem(p);
+                var defProfile = Settings.Profiles[_activeAccount];
+                // When the item is clicked, check it and
+                // set it (temporarily) as default folder.
+                item.Click += (s, ar) =>
+                    {
+                        foreach (ToolStripMenuItem it in folderToolStripMenuItem.DropDownItems)
+                            it.Checked = false;
+                        item.Checked = true;
+
+                        Common.Profile.DefaultFolder = folderToolStripMenuItem.DropDownItems.IndexOf(item);
+                    };                
+                if (defProfile.RemoteFolders[defProfile.DefaultFolder].Folder == p)
+                    item.Checked = true;
+
+                folderToolStripMenuItem.DropDownItems.Add(item);
             }
         }
 

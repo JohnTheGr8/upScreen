@@ -32,23 +32,8 @@ namespace upScreenLib
 
             if (Profiles.Count <= 0) return;
 
-            // Set Common.Profile as the CurrentProfile
-            Common.Profile = new Profile
-                {                    
-                    // Load Account info
-                    Protocol = CurrentProfile.Protocol,
-                    Host = CurrentProfile.Host,
-                    Username = CurrentProfile.Username,
-                    Password = CurrentProfile.Password,
-                    Port = CurrentProfile.Port,
-                    // Load selected paths
-                    DefaultFolder = CurrentProfile.DefaultFolder,
-                    RemotePaths = CurrentProfile.RemotePaths,
-                    HttpPath = CurrentProfile.HttpPath,
-                    // Load image file settings
-                    Extension = CurrentProfile.Extension,
-                    FileLenght = CurrentProfile.FileLenght                    
-                };
+            // Set Common.Profile as the CurrentProfile            
+            Common.Profile = CurrentProfile;
         }
 
         /// <summary>
