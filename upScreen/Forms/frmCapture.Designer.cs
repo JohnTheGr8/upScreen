@@ -59,7 +59,7 @@
             this.optionsToolStripMenuItem,
             this.cancelToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(192, 198);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(192, 176);
             // 
             // fullScreenToolStripMenuItem
             // 
@@ -158,9 +158,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "fMain";
             this.TopMost = true;
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Deactivate += new System.EventHandler(this.frmCapture_Deactivate);
             this.Load += new System.EventHandler(this.frmCapture_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCapture_KeyDown);

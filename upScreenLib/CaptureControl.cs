@@ -47,8 +47,14 @@ namespace upScreenLib
 
         public static void CaptureArea(Rectangle area)
         {
-            CapturedImage.Image = Crop(CapturedImage.Bmp, area);
-            GetBackgroundImage();
+            var s_Bitmap = new Bitmap(SystemInformation.VirtualScreen.Width, SystemInformation.VirtualScreen.Height);
+
+            using (var s_Graphics = Graphics.FromImage(s_Bitmap))
+                s_Graphics.CopyFromScreen(area.X, area.Y, 0, 0, s_Bitmap.Size);
+
+            CapturedImage.Image = s_Bitmap.Clone(new Rectangle(0, 0, area.Width, area.Height), s_Bitmap.PixelFormat);
+
+            s_Bitmap.Dispose();
 
             // Generate a random name for the file
             Common.Random = Common.RandomString(Common.Profile.FileLenght);
@@ -182,11 +188,11 @@ namespace upScreenLib
         /// </summary>
         private static Rectangle FinalizeRectangle(Rectangle rect)
         {
-            if (rect.Location.X + rect.Size.Width > Screen.PrimaryScreen.Bounds.Width)
-                rect.Width = Screen.PrimaryScreen.Bounds.Width - rect.Location.X;
+            if (rect.Location.X + rect.Size.Width > SystemInformation.VirtualScreen.Width)
+                rect.Width = SystemInformation.VirtualScreen.Width - rect.Location.X;
 
-            if (rect.Location.Y + rect.Size.Height > Screen.PrimaryScreen.Bounds.Height)
-                rect.Height = Screen.PrimaryScreen.Bounds.Height - rect.Location.Y;
+            if (rect.Location.Y + rect.Size.Height > SystemInformation.VirtualScreen.Height)
+                rect.Height = SystemInformation.VirtualScreen.Height - rect.Location.Y;
 
             return rect;
         }
@@ -298,7 +304,7 @@ namespace upScreenLib
         /// </summary>
         public static void GetBackgroundImage()
         {
-            Size sz = Screen.PrimaryScreen.Bounds.Size;
+            Size sz = SystemInformation.VirtualScreen.Size;
             IntPtr hDesk = GetDesktopWindow();
             IntPtr hSrce = GetWindowDC(hDesk);
             IntPtr hDest = CreateCompatibleDC(hSrce);
