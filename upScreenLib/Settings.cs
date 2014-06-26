@@ -11,9 +11,9 @@ namespace upScreenLib
         private static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen");
         private static readonly string ConfigPath = Path.Combine(AppDataFolder, "settings.json");
 
-        public static List<SettingsProfile> Profiles = new List<SettingsProfile>();
+        public static List<Profile> Profiles = new List<Profile>();
 
-        private static SettingsProfile CurrentProfile { get { return Profiles.Count > 0 ? Profiles[DefaultProfile] : new SettingsProfile(); } }
+        private static Profile CurrentProfile { get { return Profiles.Count > 0 ? Profiles[DefaultProfile] : new Profile(); } }
         public static string[] ProfileTitles { get { return Profiles.Select(p => string.Format("{0}@{1}", p.Username, p.Host)).ToArray(); } }
         public static int DefaultProfile { get { return Profiles.Any(a=>a.IsDefaultAccount) ?  Profiles.IndexOf(Profiles.Where(p => p.IsDefaultAccount).ToArray()[0]) : 0; } }
 
@@ -28,26 +28,12 @@ namespace upScreenLib
             if (!File.Exists(ConfigPath)) return;
             // if existing config file exists, load it to _profiles
             string config = File.ReadAllText(ConfigPath);
-            Profiles.AddRange( (List<SettingsProfile>)JsonConvert.DeserializeObject(config, typeof(List<SettingsProfile>)) );
+            Profiles.AddRange( (List<Profile>)JsonConvert.DeserializeObject(config, typeof(List<Profile>)) );
 
             if (Profiles.Count <= 0) return;
 
-            // Set Common.Profile as the CurrentProfile
-            Common.Profile = new Profile
-                {                    
-                    // Load Account info
-                    Protocol = CurrentProfile.Protocol,
-                    Host = CurrentProfile.Host,
-                    Username = CurrentProfile.Username,
-                    Password = CurrentProfile.Password,
-                    Port = CurrentProfile.Port,
-                    // Load selected paths
-                    RemotePath = CurrentProfile.RemotePaths[CurrentProfile.DefaultFolder],
-                    HttpPath = CurrentProfile.HttpPath,
-                    // Load image file settings
-                    Extension = CurrentProfile.Extension,
-                    FileLenght = CurrentProfile.FileLenght                    
-                };
+            // Set Common.Profile as the CurrentProfile            
+            Common.Profile = CurrentProfile;
         }
 
         /// <summary>
@@ -55,9 +41,9 @@ namespace upScreenLib
         /// </summary>
         public static void Save()
         {
-            var profiles = new List<SettingsProfile>(Profiles);
+            var profiles = new List<Profile>(Profiles);
             var settings = new JsonSerializerSettings();
-            string json = JsonConvert.SerializeObject(profiles, typeof(List<SettingsProfile>), Formatting.Indented,settings);
+            string json = JsonConvert.SerializeObject(profiles, typeof(List<Profile>), Formatting.Indented, settings);
             File.WriteAllText(ConfigPath, json);
         }
 
@@ -67,7 +53,7 @@ namespace upScreenLib
         public static void Clear()
         {
             Profiles.Clear();
-            var profiles = new List<SettingsProfile>(Profiles);
+            var profiles = new List<Profile>(Profiles);
             string json = JsonConvert.SerializeObject(profiles, Formatting.Indented);
             File.WriteAllText(ConfigPath, json);
             try

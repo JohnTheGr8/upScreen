@@ -247,7 +247,7 @@ namespace upScreenLib
         public static void DoStartUpload()
         {
             CapturedImage.LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + CapturedImage.Name);
-            CapturedImage.RemotePath = Common.Combine(Common.Profile.RemotePath, CapturedImage.Name);
+            CapturedImage.RemotePath = Common.Combine(Common.Profile.RemoteFolder, CapturedImage.Name);
             // Start the upload in a separate thread
             tUpload.Start();
         }
@@ -357,27 +357,34 @@ namespace upScreenLib
         /// <param name="url">url to image</param>        
         private static Image GetFromUrl(string url)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "HEAD";
-            request.ServicePoint.Expect100Continue = false;
-            request.ContentType = "application/x-www-form-urlencoded";            
-
-            using (var response = request.GetResponse())
+            var uri = new UriBuilder(url).Uri;
+            try
             {
-                var fileType = response.Headers[HttpResponseHeader.ContentType];                                
-                var allowedTypes = new List<string> { "image/png", "image/jpeg", "image/jpg", "image/gif" };
-                
-                //Compare web file MIME to valid types
-                if (allowedTypes.Contains(fileType))
+                var request = (HttpWebRequest)WebRequest.Create(uri);
+                request.Method = "HEAD";
+                request.ServicePoint.Expect100Continue = false;
+                request.ContentType = "application/x-www-form-urlencoded";
+
+                using (var response = request.GetResponse())
                 {
-                    //Download file to MemoryStream
-                    var imgBytes = new WebClient().DownloadData(url);
-                    var memStream = new MemoryStream(imgBytes);
-                    return Image.FromStream(memStream);
+                    var fileType = response.Headers[HttpResponseHeader.ContentType];
+                    var allowedTypes = new List<string> { "image/png", "image/jpeg", "image/jpg", "image/gif" };
+
+                    //Compare web file MIME to valid types
+                    if (allowedTypes.Contains(fileType))
+                    {
+                        //Download file to MemoryStream
+                        var imgBytes = new WebClient().DownloadData(uri);
+                        var memStream = new MemoryStream(imgBytes);
+                        return Image.FromStream(memStream);
+                    }
                 }
             }
-            // Something went wrong...
-            UrlCaptureFailed(null, EventArgs.Empty);
+            catch
+            {
+                // Something went wrong...
+                UrlCaptureFailed(null, EventArgs.Empty);
+            }
             return null;
         }
 

@@ -91,7 +91,7 @@ namespace upScreenLib
         /// <returns></returns>
         public static string GetLink()
         {
-            string link = Profile.HttpPath;
+            string link = Profile.RemoteHttpPath;
 
             if (!link.StartsWith(@"http://"))
                 link = "http://" + link;
