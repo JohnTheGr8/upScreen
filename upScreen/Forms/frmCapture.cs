@@ -16,7 +16,6 @@ namespace upScreen
 
         bool _onClick;
         bool _mouseMoved;
-        Point _clickPoint;
         bool _donedrawing;
 
         private bool _otherformopen = false;
@@ -96,7 +95,27 @@ namespace upScreen
                 CaptureControl.CaptureFromArgs();
             }
             else
-                Size = new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);            
+            {
+                var width = 0;
+                var height = 0;
+                var top = 0;
+                var left = 0;
+
+                foreach (var screen in Screen.AllScreens)
+                {
+                    width += screen.Bounds.Width;
+                    height += screen.Bounds.Height;
+
+                    if (screen.WorkingArea.Top < top)
+                        top = screen.WorkingArea.Top;
+
+                    if (screen.WorkingArea.Left < left)
+                        left = screen.WorkingArea.Left;
+                }
+
+                Size = new Size(width, height);
+                Location = new Point(left, top);
+            }
         }
 
         // Kill the app if the app lost focus
@@ -104,16 +123,22 @@ namespace upScreen
         {
             if (!_otherformopen) Common.KillOrWait(true);
         }
+
         // Kill the app if the app lost focus
         private void frmCapture_Deactivate(object sender, EventArgs e)
         {
             if (ActiveForm != this && !_otherformopen) Common.KillOrWait(true);
         }
+
         // Kill the app when ESC pressed
         private void frmCapture_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape) Common.KillOrWait(true);
         }
+
+        private Point NativeClickPoint;
+        private Point SelectionPoint;
+
         // set the starting point of the Selection Box
         private void frmCapture_MouseDown(object sender, MouseEventArgs e)
         {
@@ -122,9 +147,11 @@ namespace upScreen
             CaptureControl.GetBackgroundImage();
             this.TransparencyKey = Color.White;
             _onClick = true;
-            _clickPoint = MousePosition;
-            pbSelection.Location = new Point(_clickPoint.X, _clickPoint.Y);
+            NativeClickPoint = MousePosition;
+            SelectionPoint = new Point(e.X, e.Y);
+            pbSelection.Location = SelectionPoint;
         }
+
         // resize the selection box based on cursor position
         private void frmCapture_MouseMove(object sender, MouseEventArgs e)
         {
@@ -133,25 +160,26 @@ namespace upScreen
             _mouseMoved = true;
 
             int new_x, new_y, new_width, new_height;
-            if (MousePosition.X > _clickPoint.X)
+
+            if (e.X > SelectionPoint.X)
             {
-                new_x = _clickPoint.X;
-                new_width = MousePosition.X - _clickPoint.X;
+                new_x = SelectionPoint.X;
+                new_width = e.X - SelectionPoint.X;
             }
             else
             {
-                new_x = MousePosition.X;
-                new_width = _clickPoint.X - MousePosition.X;
+                new_x = e.X;
+                new_width = SelectionPoint.X - e.X;
             }
-            if (MousePosition.Y > _clickPoint.Y)
+            if (e.Y > SelectionPoint.Y)
             {
-                new_y = _clickPoint.Y;
-                new_height = MousePosition.Y - _clickPoint.Y;
+                new_y = SelectionPoint.Y;
+                new_height = e.Y - SelectionPoint.Y;
             }
             else
             {
-                new_y = MousePosition.Y;
-                new_height = _clickPoint.Y - MousePosition.Y;
+                new_y = e.Y;
+                new_height = SelectionPoint.Y - e.Y;
             }
 
             if (!pbSelection.Visible)
@@ -190,8 +218,20 @@ namespace upScreen
                         Common.KillOrWait(true);
                         return;
                     }
+
+                    // Calculate the final selected area
+                    var s_FinalPoint = MousePosition;
+
+                    var s_LeftX = s_FinalPoint.X > NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;
+                    var s_RightX = s_FinalPoint.X <= NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;
+                    var s_TopY = s_FinalPoint.Y > NativeClickPoint.Y ? NativeClickPoint.Y : s_FinalPoint.Y;
+                    var s_BottomY = s_FinalPoint.Y <= NativeClickPoint.Y ? NativeClickPoint.Y : s_FinalPoint.Y;
+
+                    var s_Width = s_RightX - s_LeftX;
+                    var s_Height = s_BottomY - s_TopY;
+
                     // Capture the selected area
-                    Rectangle area = new Rectangle(pbSelection.Location, pbSelection.Size);
+                    Rectangle area = new Rectangle(s_LeftX, s_TopY, s_Width, s_Height);
                     CaptureControl.CaptureArea(area);
                 }
                 else

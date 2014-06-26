@@ -166,9 +166,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "fMain";
             this.TopMost = true;
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Deactivate += new System.EventHandler(this.frmCapture_Deactivate);
             this.Load += new System.EventHandler(this.frmCapture_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmCapture_KeyDown);
