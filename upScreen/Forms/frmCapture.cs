@@ -143,11 +143,13 @@ namespace upScreen
         private void frmCapture_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left) return;
-
+            // Get the screen we're capturing
+            CaptureControl.CaptureScreen = Screen.FromPoint(Cursor.Position);
             CaptureControl.GetBackgroundImage();
             this.TransparencyKey = Color.White;
             _onClick = true;
-            NativeClickPoint = MousePosition;
+            // Get the click point relative to the screen we are capturing
+            NativeClickPoint = new Point(MousePosition.X - CaptureControl.CaptureScreen.Bounds.X, MousePosition.Y - CaptureControl.CaptureScreen.Bounds.Y);
             SelectionPoint = new Point(e.X, e.Y);
             pbSelection.Location = SelectionPoint;
         }
@@ -220,7 +222,8 @@ namespace upScreen
                     }
 
                     // Calculate the final selected area
-                    var s_FinalPoint = MousePosition;
+                    // Location should be relative to the screen we are capturing
+                    var s_FinalPoint = new Point(MousePosition.X - CaptureControl.CaptureScreen.Bounds.X, MousePosition.Y - CaptureControl.CaptureScreen.Bounds.Y);
 
                     var s_LeftX = s_FinalPoint.X > NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;
                     var s_RightX = s_FinalPoint.X <= NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;
@@ -236,13 +239,12 @@ namespace upScreen
                 }
                 else
                 {
-                                        
                     try
                     {
                         // when single-clicking over the taskbar, capture it. Otherwise, capture the window from the cursor point
-                        if (MousePosition.Y > Screen.PrimaryScreen.WorkingArea.Height)
+                        if (NativeClickPoint.Y > CaptureControl.CaptureScreen.WorkingArea.Height)
                         {
-                            Rectangle taskbar = new Rectangle(0, Screen.PrimaryScreen.WorkingArea.Height, Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height - Screen.PrimaryScreen.WorkingArea.Height);
+                            Rectangle taskbar = new Rectangle(0, CaptureControl.CaptureScreen.WorkingArea.Height, CaptureControl.CaptureScreen.Bounds.Width, CaptureControl.CaptureScreen.Bounds.Height - CaptureControl.CaptureScreen.WorkingArea.Height);
                             CaptureControl.CaptureArea(taskbar);
                         } else
                             CaptureControl.CaptureWindow(Cursor.Position);
@@ -264,7 +266,8 @@ namespace upScreen
         {
             _otherformopen = true;
             Hide();
-
+            // Get the screen we're capturing
+            CaptureControl.CaptureScreen = Screen.FromPoint(Cursor.Position);
             CaptureControl.CaptureFullScreen();
         }
 

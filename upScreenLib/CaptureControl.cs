@@ -18,6 +18,8 @@ namespace upScreenLib
         public static event EventHandler<EventArgs> UploadComplete;
         // Event raised when the given url cannot be processed correctly
         public static event EventHandler<EventArgs> UrlCaptureFailed;
+        // The screen which we're going to capture, defaults to the primary screen
+        public static Screen CaptureScreen = Screen.PrimaryScreen;
 
         #region Capture Full Screen
 
@@ -47,14 +49,7 @@ namespace upScreenLib
 
         public static void CaptureArea(Rectangle area)
         {
-            var s_Bitmap = new Bitmap(SystemInformation.VirtualScreen.Width, SystemInformation.VirtualScreen.Height);
-
-            using (var s_Graphics = Graphics.FromImage(s_Bitmap))
-                s_Graphics.CopyFromScreen(area.X, area.Y, 0, 0, s_Bitmap.Size);
-
-            CapturedImage.Image = s_Bitmap.Clone(new Rectangle(0, 0, area.Width, area.Height), s_Bitmap.PixelFormat);
-
-            s_Bitmap.Dispose();
+            CapturedImage.Image = Crop(CapturedImage.Bmp, area);
 
             // Generate a random name for the file
             Common.Random = Common.RandomString(Common.Profile.FileLenght);
@@ -93,14 +88,17 @@ namespace upScreenLib
             Rectangle windowRect = ApiWrapper.Window.GetWindowRect(window);           
 
             // find the height of the windows taskbar
-            int tbheight = Screen.PrimaryScreen.Bounds.Height - Screen.PrimaryScreen.WorkingArea.Height;
+            int tbheight = CaptureScreen.Bounds.Height - CaptureScreen.WorkingArea.Height;
                 
             // fix for when the window height is maximum
-            if (windowRect.Height + windowRect.Y + tbheight + windowRect.Y == Screen.PrimaryScreen.Bounds.Height)
+            if (windowRect.Height + windowRect.Y + tbheight + windowRect.Y == CaptureScreen.Bounds.Height)
             {
                 windowRect.Y = 0;
-                windowRect.Height = Screen.PrimaryScreen.WorkingArea.Height;
+                windowRect.Height = CaptureScreen.WorkingArea.Height;
             }
+
+            // Make the rectangle location relative to the screen we are capturing
+            windowRect.Location = new Point(windowRect.X - CaptureScreen.Bounds.X, windowRect.Y - CaptureScreen.Bounds.Y);
 
             // Fix negative locations
             if (windowRect.Location.X < 0)
@@ -170,7 +168,7 @@ namespace upScreenLib
         #region Image Editing and Finalizing
 
         /// <summary>
-        /// Crop the given image at the given rectangle's potiton/dimmensions
+        /// Crop the given image at the given rectangle's positon/dimmensions
         /// </summary>
         /// <param name="img">The image to crop</param>
         /// <param name="rect">The rectangle that defines the crop starting point and dimmensions</param>
@@ -188,11 +186,11 @@ namespace upScreenLib
         /// </summary>
         private static Rectangle FinalizeRectangle(Rectangle rect)
         {
-            if (rect.Location.X + rect.Size.Width > SystemInformation.VirtualScreen.Width)
-                rect.Width = SystemInformation.VirtualScreen.Width - rect.Location.X;
+            if (rect.Location.X + rect.Size.Width > CaptureScreen.Bounds.Width)
+                rect.Width = CaptureScreen.Bounds.Width - rect.Location.X;
 
-            if (rect.Location.Y + rect.Size.Height > SystemInformation.VirtualScreen.Height)
-                rect.Height = SystemInformation.VirtualScreen.Height - rect.Location.Y;
+            if (rect.Location.Y + rect.Size.Height > CaptureScreen.Bounds.Height)
+                rect.Height = CaptureScreen.Bounds.Height - rect.Location.Y;
 
             return rect;
         }
@@ -304,18 +302,11 @@ namespace upScreenLib
         /// </summary>
         public static void GetBackgroundImage()
         {
-            Size sz = SystemInformation.VirtualScreen.Size;
-            IntPtr hDesk = GetDesktopWindow();
-            IntPtr hSrce = GetWindowDC(hDesk);
-            IntPtr hDest = CreateCompatibleDC(hSrce);
-            IntPtr hbmp = CreateCompatibleBitmap(hSrce, sz.Width, sz.Height);
-            IntPtr hOldbmp = SelectObject(hDest, hbmp);
-            BitBlt(hDest, 0, 0, sz.Width, sz.Height, hSrce, 0, 0, CopyPixelOperation.SourceCopy | CopyPixelOperation.CaptureBlt);
-            CapturedImage.Bmp = Image.FromHbitmap(hbmp);
-            SelectObject(hDest, hOldbmp);
-            DeleteObject(hbmp);
-            DeleteDC(hDest);
-            ReleaseDC(hDesk, hSrce);
+            var bmp = new Bitmap(CaptureScreen.Bounds.Width, CaptureScreen.Bounds.Height);
+            var gfx = Graphics.FromImage(bmp);
+            gfx.CopyFromScreen(CaptureScreen.Bounds.X, CaptureScreen.Bounds.Y, 0, 0, CaptureScreen.Bounds.Size, CopyPixelOperation.SourceCopy);
+
+            CapturedImage.Bmp = bmp;
         }
 
         /// <summary>
