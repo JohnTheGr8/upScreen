@@ -98,7 +98,7 @@ namespace upScreenLib
             }
 
             // Make the rectangle location relative to the screen we are capturing
-            windowRect.Location = new Point(windowRect.X - CaptureScreen.Bounds.X, windowRect.Y - CaptureScreen.Bounds.Y);
+            windowRect.Location = windowRect.Location.Substract(CaptureScreen.Bounds.Location);
 
             // Fix negative locations
             if (windowRect.Location.X < 0)
@@ -272,30 +272,6 @@ namespace upScreenLib
         #endregion        
 
         #region Image fetching
-
-        #region P/Invoke declarations
-
-        [DllImport("gdi32.dll")]
-        static extern bool BitBlt(IntPtr hdcDest, int xDest, int yDest, int
-        wDest, int hDest, IntPtr hdcSource, int xSrc, int ySrc, CopyPixelOperation rop);
-        [DllImport("user32.dll")]
-        static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDc);
-        [DllImport("gdi32.dll")]
-        static extern IntPtr DeleteDC(IntPtr hDc);
-        [DllImport("gdi32.dll")]
-        static extern IntPtr DeleteObject(IntPtr hDc);
-        [DllImport("gdi32.dll")]
-        static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int nWidth, int nHeight);
-        [DllImport("gdi32.dll")]
-        static extern IntPtr CreateCompatibleDC(IntPtr hdc);
-        [DllImport("gdi32.dll")]
-        static extern IntPtr SelectObject(IntPtr hdc, IntPtr bmp);
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetDesktopWindow();
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetWindowDC(IntPtr ptr);
-
-        #endregion
 
         /// <summary>
         /// Capture the entire screen into CapturedImage.Bmp

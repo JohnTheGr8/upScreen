@@ -149,7 +149,7 @@ namespace upScreen
             this.TransparencyKey = Color.White;
             _onClick = true;
             // Get the click point relative to the screen we are capturing
-            NativeClickPoint = new Point(MousePosition.X - CaptureControl.CaptureScreen.Bounds.X, MousePosition.Y - CaptureControl.CaptureScreen.Bounds.Y);
+            NativeClickPoint = MousePosition.Substract(CaptureControl.CaptureScreen.Bounds.Location);
             SelectionPoint = new Point(e.X, e.Y);
             pbSelection.Location = SelectionPoint;
         }
@@ -223,7 +223,7 @@ namespace upScreen
 
                     // Calculate the final selected area
                     // Location should be relative to the screen we are capturing
-                    var s_FinalPoint = new Point(MousePosition.X - CaptureControl.CaptureScreen.Bounds.X, MousePosition.Y - CaptureControl.CaptureScreen.Bounds.Y);
+                    var s_FinalPoint = MousePosition.Substract(CaptureControl.CaptureScreen.Bounds.Location);
 
                     var s_LeftX = s_FinalPoint.X > NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;
                     var s_RightX = s_FinalPoint.X <= NativeClickPoint.X ? NativeClickPoint.X : s_FinalPoint.X;

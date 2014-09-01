@@ -229,5 +229,13 @@ namespace upScreenLib
                     return ".png";
             }
         }
+
+        /// <summary>
+        /// Subsctract point b from point a
+        /// </summary>
+        public static Point Substract(this Point a, Point b)
+        {
+            return new Point(a.X - b.X, a.Y - b.Y);
+        }
     }
 }
