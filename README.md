@@ -13,9 +13,10 @@ Easily capture your screen and upload the image to your own server.
 - Upload image files from the context menu
 - Capture full screen
 - Upload image to your server, via FTP or SFTP
-- Switch between multiple accounts
+- Switch between multiple accounts/folders
 - Open image file in browser
 - Copy image link to clipboard
+- Multiple monitor support
 
 ### License
 

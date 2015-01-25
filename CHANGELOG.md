@@ -1,6 +1,11 @@
 Changelog
 ========
 
+## Version 1.6
+- Multiple monitor support
+- Capture image from a copied URL
+- Switch between folders from the right-click menu
+
 ## Version 1.5
 
 - Upload image files from right-click menu
