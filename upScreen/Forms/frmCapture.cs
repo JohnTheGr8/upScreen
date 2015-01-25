@@ -322,7 +322,7 @@ namespace upScreen
             {
                 br = new WebBrowser();
                 br.DocumentCompleted += browser_DocumentCompleted;
-                br.Navigate(@"http://sharpmindprojects.com/upscreenv.txt");
+                br.Navigate(@"http://getupscreen.com/version.txt");
             }
             catch (Exception ex)
             {
