@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -125,37 +124,7 @@ namespace upScreenLib
         {
             if ((CapturedImage.Link == string.Empty || !OpenInBrowser) && string.IsNullOrWhiteSpace(link)) return;
 
-            Process p = new Process();
-            p.StartInfo.FileName = GetDefaultBrowser();
-            p.StartInfo.Arguments = link ?? CapturedImage.Link;
-            p.Start();
-        }
-
-        /// <summary>
-        /// Look in registry for the default browser, return the link to the exe
-        /// </summary>
-        /// <returns></returns>
-        private static string GetDefaultBrowser()
-        {
-            string browser;
-            RegistryKey key = null;
-            try
-            {
-                key = Registry.ClassesRoot.OpenSubKey(@"HTTP\shell\open\command", false);
-
-                // remove quotes
-                browser = key.GetValue(null).ToString().ToLower().Replace("\"", "");
-                if (!browser.EndsWith("exe"))
-                {
-                    // get rid of everything after the ".exe"
-                    browser = browser.Substring(0, browser.LastIndexOf(".exe") + 4);
-                }
-            }
-            finally
-            {
-                if (key != null) key.Close();
-            }
-            return browser;
+            Process.Start(link ?? CapturedImage.Link);
         }
 
         /// <summary>
