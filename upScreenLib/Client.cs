@@ -2,9 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Starksoft.Net.Ftp;
+using FluentFTP;
 using Renci.SshNet;
 using System.Collections.Generic;
+using System.Security.Authentication;
 
 namespace upScreenLib
 {
@@ -27,24 +28,23 @@ namespace upScreenLib
         {
             if (FTP)
             {
-                ftpc = new FtpClient(Common.Profile.Host, Common.Profile.Port);
+                ftpc = new FtpClient(Common.Profile.Host, Common.Profile.Username, Common.Profile.Password);
+                ftpc.Port = Common.Profile.Port;
+
                 switch (Common.Profile.FtpsInvokeMethod)
                 {
-                    case 0:
-                        goto default;
                     case FtpsMethod.Explicit:
-                        ftpc.SecurityProtocol = FtpSecurityProtocol.Tls1OrSsl3Explicit;
-                        ftpc.ValidateServerCertificate += (o, e) => e.IsCertificateValid = true;
-                        break;
                     case FtpsMethod.Implicit:
-                        ftpc.SecurityProtocol = FtpSecurityProtocol.Tls1OrSsl3Implicit;
-                        ftpc.ValidateServerCertificate += (o, e) => e.IsCertificateValid = true;
+                        ftpc.EncryptionMode = (FtpEncryptionMode) Common.Profile.FtpsInvokeMethod; // FtpEncryptionMode.Explicit;
+                        ftpc.SslProtocols = SslProtocols.Default;
+                        //todo: what about e.PolicyErrors 
+                        ftpc.ValidateCertificate += (o, e) => e.Accept = true;
                         break;
                     default:
-                        ftpc.SecurityProtocol = FtpSecurityProtocol.None;
+                        ftpc.SslProtocols = SslProtocols.None;
                         break;
                 }
-                ftpc.Open(Common.Profile.Username, Common.Profile.Password);
+                ftpc.Connect();
             }
             else
             {
@@ -72,9 +72,6 @@ namespace upScreenLib
             try
             {
                 Connect();
-                // Setup the event handler for the async upload
-                if (Common.Profile.Protocol != FtpProtocol.SFTP)
-                    ftpc.PutFileAsyncCompleted += CaptureControl.ImageUploaded;
 
                 // If the image has been captured, start the upload
                 if (Common.IsImageCaptured)
@@ -96,7 +93,7 @@ namespace upScreenLib
         public static void Disconnect()
         {
             if (FTP)
-                ftpc.Close();
+                ftpc.Disconnect();
             else
                 sftpc.Disconnect();
         }
@@ -112,22 +109,22 @@ namespace upScreenLib
                 path = path.Substring(1);
 
             if (FTP)
-                foreach (FtpItem f in ftpc.GetDirList(path))
+                foreach (var f in ftpc.GetListing(path))
                 {
                     ClientItemType t;
-                    switch (f.ItemType)
+                    switch (f.Type)
                     {
-                        case FtpItemType.File:
+                        case FtpFileSystemObjectType.File:
                             t = ClientItemType.File;
                             break;
-                        case FtpItemType.Directory:
+                        case FtpFileSystemObjectType.Directory:
                             t = ClientItemType.Folder;
                             break;
                         default:
                             t = ClientItemType.Other;
                             break;
                     }
-                    l.Add(new ClientItem { Name = f.Name, FullPath = f.FullPath, Type = t });
+                    l.Add(new ClientItem { Name = f.Name, FullPath = f.FullName, Type = t });
                 }
             else
                 foreach (var s in sftpc.ListDirectory(path).Where(s => s.Name != "." && s.Name != ".."))
@@ -152,7 +149,7 @@ namespace upScreenLib
         public static void UploadCapturedImage()
         {
             if (FTP)
-                ftpc.PutFileAsync(CapturedImage.LocalPath, CapturedImage.RemotePath, FileAction.CreateNew);            
+                ftpc.UploadFile(CapturedImage.LocalPath, CapturedImage.RemotePath);
             else
             {
                 EventWaitHandle wait = new AutoResetEvent(false);
@@ -160,10 +157,10 @@ namespace upScreenLib
                 using (var file = File.OpenRead(CapturedImage.LocalPath))
                 {
                     var asynch = sftpc.BeginUploadFile(file, CapturedImage.RemotePath, delegate
-                    {
-                        Console.Write("\nCallback called.");
-                        wait.Set();
-                    },
+                        {
+                            Console.Write("\nCallback called.");
+                            wait.Set();
+                        },
                         null);
 
                     var sftpASynch = asynch as Renci.SshNet.Sftp.SftpUploadAsyncResult;
@@ -177,9 +174,9 @@ namespace upScreenLib
                     sftpc.EndUploadFile(asynch);
                     wait.WaitOne();
                 }
-
-                CaptureControl.ImageUploaded();
             }
+
+            CaptureControl.ImageUploaded();
         }
 
         #endregion
@@ -198,11 +195,11 @@ namespace upScreenLib
 
         public static string WorkingDirectory
         {
-            get { return FTP ? ftpc.CurrentDirectory : sftpc.WorkingDirectory; }
+            get { return FTP ? ftpc.GetWorkingDirectory() : sftpc.WorkingDirectory; }
             set
             {
                 if (FTP)
-                    ftpc.ChangeDirectory(value);
+                    ftpc.SetWorkingDirectory(value);
                 else
                     sftpc.ChangeDirectory(value);
             }
@@ -210,7 +207,7 @@ namespace upScreenLib
 
         public static bool Exists(string path)
         {
-            return FTP ? ftpc.Exists(path) : sftpc.Exists(path);
+            return FTP ? ftpc.FileExists(path) : sftpc.Exists(path);
         }
 
         #endregion

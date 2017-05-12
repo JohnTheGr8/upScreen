@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
@@ -76,20 +75,20 @@ namespace upScreenLib
         {
             IntPtr window = ApiWrapper.Window.WindowFromPoint(p);
 
-            if (window == IntPtr.Zero) return; 
-            
-            Log.Write(l.Debug, "Capturing window: {0}", ApiWrapper.Window.GetWindowText(window));                        
+            if (window == IntPtr.Zero) return;
+
+            Log.Write(l.Debug, "Capturing window: {0}", ApiWrapper.Window.GetWindowText(window));
 
             // Find the window from the click point
             while (ApiWrapper.Window.IsChild(ApiWrapper.Window.GetParent(window), window))
-                window = ApiWrapper.Window.GetParent(window);                
-                
+                window = ApiWrapper.Window.GetParent(window);
+
             // rectangle at the position and size of the selected window
-            Rectangle windowRect = ApiWrapper.Window.GetWindowRect(window);           
+            Rectangle windowRect = ApiWrapper.Window.GetWindowRect(window);
 
             // find the height of the windows taskbar
             int tbheight = CaptureScreen.Bounds.Height - CaptureScreen.WorkingArea.Height;
-                
+
             // fix for when the window height is maximum
             if (windowRect.Height + windowRect.Y + tbheight + windowRect.Y == CaptureScreen.Bounds.Height)
             {
@@ -111,7 +110,7 @@ namespace upScreenLib
                 windowRect.Height = windowRect.Height + windowRect.Y;
                 windowRect.Y = 0;
             }
-                
+
             // Crop the full-screen image at the position/dimmensions of the selected window
             CapturedImage.Image = Crop(CapturedImage.Bmp, windowRect);
 
@@ -119,7 +118,7 @@ namespace upScreenLib
             // Generate a random name for the file
             Common.Random = Common.RandomString(Common.Profile.FileLenght);
             CapturedImage.Name = Common.Random + Common.GetFormat();
-                
+
             // Get the image link, copy (?) to clipboard
             CapturedImage.Link = Common.GetLink();
             if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
@@ -139,7 +138,7 @@ namespace upScreenLib
         /// Loads the image file into CapturedImage.Image
         /// </summary>
         public static void CaptureFromArgs()
-        {            
+        {
             var li = new List<string>(Profile.ArgFiles);
             foreach (string s in li)
             {
@@ -203,15 +202,8 @@ namespace upScreenLib
         /// Called when the image has finished uploading. 
         /// Deletes the local file, opens the uploaded image in browser and closes upScreen
         /// </summary>
-        public static void ImageUploaded(object sender = null, Starksoft.Net.Ftp.PutFileAsyncCompletedEventArgs e = null)
+        public static void ImageUploaded(object sender = null)
         {
-            if (e != null)
-                if (e.Cancelled)
-                {
-                    Log.Write(l.Debug, e.Error.Message);
-                    return;
-                }
-
             try
             {
                 if (!Profile.FromFileMenu)
@@ -264,7 +256,7 @@ namespace upScreenLib
                 if (Common.CopyLink)
                     Clipboard.SetText(CapturedImage.Link);
             }
-            catch (Exception ex){ Log.Write(l.Error, ex.Message); }
+            catch (Exception ex) { Log.Write(l.Error, ex.Message); }
 
             Client.UploadCapturedImage();
         }
