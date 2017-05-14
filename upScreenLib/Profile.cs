@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
@@ -48,6 +50,10 @@ namespace upScreenLib
         {
             get { return RemoteFolders[DefaultFolder].HttpPath; }
         }
+
+        [JsonIgnore]
+        public bool IsNotSet =>
+            (new[] { Host, Username, Password }).Any(string.IsNullOrEmpty);
 
         /// <summary>
         /// Load the given account details

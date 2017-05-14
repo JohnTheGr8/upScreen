@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using upScreenLib.LogConsole;
 using upScreenLib;
@@ -21,7 +22,7 @@ namespace upScreen.Forms
             InitializeComponent();
         }
 
-        private void frmAddAccount_Load(object sender, EventArgs e)
+        private async void frmAddAccount_Load(object sender, EventArgs e)
         {
             cMode.SelectedIndex = 0;
             
@@ -39,7 +40,7 @@ namespace upScreen.Forms
                 tPassword.Text = Common.Profile.Password;                
 
                 // List remote folders in treeview
-                ListDirectories();
+                await ListDirectories();
             }
         }
 
@@ -49,7 +50,7 @@ namespace upScreen.Forms
             nPort.Value = cMode.SelectedIndex == 0 ? 21 : 22;
         }
 
-        private void bTest_Click(object sender, EventArgs e)
+        private async void bTest_Click(object sender, EventArgs e)
         {
             _ftpOrSftp = cMode.SelectedIndex == 0;
             try
@@ -59,10 +60,10 @@ namespace upScreen.Forms
                 Common.Profile.AddAccount(tHost.Text, tUsername.Text, tPassword.Text, Convert.ToInt32(nPort.Value));
                 Common.Profile.Protocol = _ftpOrSftp ? FtpProtocol.FTP : FtpProtocol.SFTP;
 
-                Client.Connect();
+                await Client.Connect();
 
                 // On success:
-                ListDirectories();
+                await ListDirectories();
                 tHttpPath.Text = Common.Profile.Host;
                 gPaths.Enabled = true;
 
@@ -82,14 +83,14 @@ namespace upScreen.Forms
         /// <summary>
         /// List the directories in the root folder
         /// </summary>
-        private void ListDirectories()
+        private async Task ListDirectories()
         {
             tFolderTree.Nodes.Clear();
             // Add the root item
             TreeNode first = new TreeNode { Text = "/" };
             tFolderTree.Nodes.Add(first);
             // Add an item for each folder in the root path
-            foreach (var c in Client.List("."))
+            foreach (var c in await Client.List("."))
             {
                 if (c.Type != ClientItemType.Folder) continue;
 
@@ -114,7 +115,7 @@ namespace upScreen.Forms
             bDone.Enabled = RemotePathsDictionary.Count > 0;
         }
 
-        private void tFolderTree_AfterExpand(object sender, TreeViewEventArgs e)
+        private async void tFolderTree_AfterExpand(object sender, TreeViewEventArgs e)
         {
             string path = "/" + e.Node.FullPath.Replace('\\', '/');
             // Clear all child nodes
@@ -122,7 +123,7 @@ namespace upScreen.Forms
                 e.Node.Nodes.Clear();
 
             // Add a new item to the tree for each remote folder
-            foreach (ClientItem c in Client.List(path))
+            foreach (ClientItem c in await Client.List(path))
             {
                 // We only want to list folders...
                 if (c.Type != ClientItemType.Folder) continue;

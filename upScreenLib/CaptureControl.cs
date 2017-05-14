@@ -4,15 +4,13 @@ using System.Drawing;
 using System.Net;
 using System.Windows.Forms;
 using System.IO;
-using System.Threading;
+using System.Threading.Tasks;
 using upScreenLib.LogConsole;
 
 namespace upScreenLib
 {
     public class CaptureControl
     {
-        // Setup the upload thread
-        private static readonly Thread tUpload = new Thread(UploadImage);
         // Event raised when the upload has been completed
         public static event EventHandler<EventArgs> UploadComplete;
         // Event raised when the given url cannot be processed correctly
@@ -221,32 +219,24 @@ namespace upScreenLib
         }
 
         /// <summary>
-        /// Start the upload if the account-checking thread (tCheckAccount) has exited
+        /// Start the upload if the client is connected and ready to go
         /// </summary>
-        public static void CheckStartUpload()
+        public static async Task CheckStartUpload()
         {
-            if (Client.tCheckAccount.IsAlive)
+            if (!Client.taskCheckAccount.IsCompleted)
                 Common.IsImageCaptured = true;
             else
-                DoStartUpload();
+                await UploadImage();
         }
 
         /// <summary>
-        /// Start the thread that uploads the image
+        /// Upload the captured image
         /// </summary>
-        public static void DoStartUpload()
+        public static async Task UploadImage()
         {
             CapturedImage.LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + CapturedImage.Name);
             CapturedImage.RemotePath = Common.Combine(Common.Profile.RemoteFolder, CapturedImage.Name);
-            // Start the upload in a separate thread
-            tUpload.Start();
-        }
 
-        /// <summary>
-        /// upload dat screenshot
-        /// </summary>
-        private static void UploadImage()
-        {
             try
             {
                 Log.Write(l.Client, "lP: {0}", CapturedImage.LocalPath);
@@ -258,7 +248,7 @@ namespace upScreenLib
             }
             catch (Exception ex) { Log.Write(l.Error, ex.Message); }
 
-            Client.UploadCapturedImage();
+            await Client.UploadCapturedImage();
         }
 
         #endregion        

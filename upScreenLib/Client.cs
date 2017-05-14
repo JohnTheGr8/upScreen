@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using FluentFTP;
 using Renci.SshNet;
 using System.Collections.Generic;
 using System.Security.Authentication;
+using System.Threading.Tasks;
+using Renci.SshNet.Async;
 
 namespace upScreenLib
 {
@@ -14,9 +15,7 @@ namespace upScreenLib
         private static SftpClient sftpc;
         private static FtpClient ftpc;
 
-        public static event EventHandler<TryConnectEventArgs> TryConnectCompleted;
-
-        public static Thread tCheckAccount = new Thread(TryConnect);
+        public static Task<bool> taskCheckAccount = TryConnect();
 
         #region Functions
 
@@ -24,7 +23,7 @@ namespace upScreenLib
         /// Connect to the remote server, using the 
         /// account info found in Common.Profile
         /// </summary>
-        public static void Connect()
+        public static async Task Connect()
         {
             if (FTP)
             {
@@ -35,7 +34,7 @@ namespace upScreenLib
                 {
                     case FtpsMethod.Explicit:
                     case FtpsMethod.Implicit:
-                        ftpc.EncryptionMode = (FtpEncryptionMode) Common.Profile.FtpsInvokeMethod; // FtpEncryptionMode.Explicit;
+                        ftpc.EncryptionMode = (FtpEncryptionMode) Common.Profile.FtpsInvokeMethod;
                         ftpc.SslProtocols = SslProtocols.Default;
                         //todo: what about e.PolicyErrors 
                         ftpc.ValidateCertificate += (o, e) => e.Accept = true;
@@ -44,46 +43,44 @@ namespace upScreenLib
                         ftpc.SslProtocols = SslProtocols.None;
                         break;
                 }
-                ftpc.Connect();
+                await ftpc.ConnectAsync();
             }
             else
             {
                 sftpc = new SftpClient(Common.Profile.Host, Common.Profile.Port, 
                         Common.Profile.Username, Common.Profile.Password);
-                sftpc.Connect();
+
+                // ugly but eh
+                await Task.Run(() => sftpc.Connect());
             }
         }
 
         /// <summary>
         /// Start TryConnect in a separate thread
         /// </summary>
-        public static void CheckAccount()
+        public static Task<bool> CheckAccount()
         {
-            tCheckAccount = new Thread(TryConnect);
-            tCheckAccount.Start();
+            if (taskCheckAccount.Status == TaskStatus.RanToCompletion)
+                taskCheckAccount = TryConnect();
+
+            return taskCheckAccount;
         }
 
         /// <summary>
-        /// Try to connect to the account found in Common.Profile, then raise 
-        /// TryConnectCompleted to show if the attempt was successful
+        /// Try to connect to the account found in Common.Profile, return
+        /// bool with the connection result
         /// </summary>
-        public static void TryConnect()
+        public static async Task<bool> TryConnect()
         {
             try
             {
-                Connect();
-
-                // If the image has been captured, start the upload
-                if (Common.IsImageCaptured)
-                {
-                    CaptureControl.DoStartUpload();
-                    TryConnectCompleted(null, new TryConnectEventArgs { Success = true });                    
-                }
+                await Connect();
+                return true;
             }
             catch
             {
-                // If connecting failed, raise TryConnectCompleted with Success set to false 
-                TryConnectCompleted(null, new TryConnectEventArgs{ Success = false });
+                // If connecting failed, return false
+                return false;
             }
         }
 
@@ -101,7 +98,7 @@ namespace upScreenLib
         /// <summary>
         /// Returns a list of files/folders inside the given path (folder)
         /// </summary>
-        public static List<ClientItem> List(string path)
+        public static async Task<List<ClientItem>> List(string path)
         {
             var l = new List<ClientItem>();
 
@@ -109,7 +106,7 @@ namespace upScreenLib
                 path = path.Substring(1);
 
             if (FTP)
-                foreach (var f in ftpc.GetListing(path))
+                foreach (var f in await ftpc.GetListingAsync(path))
                 {
                     ClientItemType t;
                     switch (f.Type)
@@ -127,7 +124,7 @@ namespace upScreenLib
                     l.Add(new ClientItem { Name = f.Name, FullPath = f.FullName, Type = t });
                 }
             else
-                foreach (var s in sftpc.ListDirectory(path).Where(s => s.Name != "." && s.Name != ".."))
+                foreach (var s in (await sftpc.ListDirectoryAsync(path)).Where(s => s.Name != "." && s.Name != ".."))
                 {
                     ClientItemType t;
                     if (s.IsRegularFile)
@@ -146,33 +143,26 @@ namespace upScreenLib
         /// <summary>
         /// Upload the captured image, file path found in CapturedImage.LocalPath
         /// </summary>
-        public static void UploadCapturedImage()
+        public static async Task UploadCapturedImage()
         {
-            if (FTP)
-                ftpc.UploadFile(CapturedImage.LocalPath, CapturedImage.RemotePath);
-            else
+            using (var localStream = File.OpenRead(CapturedImage.LocalPath))
             {
-                EventWaitHandle wait = new AutoResetEvent(false);
-
-                using (var file = File.OpenRead(CapturedImage.LocalPath))
+                if (FTP)
                 {
-                    var asynch = sftpc.BeginUploadFile(file, CapturedImage.RemotePath, delegate
-                        {
-                            Console.Write("\nCallback called.");
-                            wait.Set();
-                        },
-                        null);
+                    var remoteStream = await ftpc.OpenWriteAsync(CapturedImage.RemotePath);
 
-                    var sftpASynch = asynch as Renci.SshNet.Sftp.SftpUploadAsyncResult;
-                    while (!sftpASynch.IsCompleted)
+                    var buf = new byte[ftpc.TransferChunkSize];
+                    int read;
+                    while ((read = await localStream.ReadAsync(buf, 0, buf.Length)) > 0)
                     {
-                        if (sftpASynch.UploadedBytes > 0)
-                            Console.Write("\rUploaded {0} bytes ", sftpASynch.UploadedBytes);
-                        Thread.Sleep(100);
+                        await remoteStream.WriteAsync(buf, 0, read);
                     }
-                    Console.Write("\rUploaded {0} bytes!", sftpASynch.UploadedBytes);
-                    sftpc.EndUploadFile(asynch);
-                    wait.WaitOne();
+                    //TODO: switch to this when FluentFTP's UploadFileAsync is patched:
+                    //await ftpc.UploadFileAsync(CapturedImage.LocalPath, CapturedImage.RemotePath);
+                }
+                else
+                {
+                    await sftpc.UploadAsync(localStream, CapturedImage.RemotePath);
                 }
             }
 
@@ -211,10 +201,5 @@ namespace upScreenLib
         }
 
         #endregion
-    }
-
-    public class TryConnectEventArgs : EventArgs
-    {
-        public bool Success;    // Was the connection established successfully?
     }
 }

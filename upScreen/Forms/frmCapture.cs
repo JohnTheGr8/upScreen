@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using upScreenLib.LogConsole;
 using upScreen.Forms;
 using upScreenLib;
@@ -32,14 +33,7 @@ namespace upScreen
             InitializeComponent();
             // Set UploadComplete handlers
             CaptureControl.UploadComplete += CheckForUpdate;
-            // Set TryConnectCompleted handlers
-            Client.TryConnectCompleted += (o, args) =>
-            {
-                if (!args.Success)
-                    //CheckForUpdate(null, EventArgs.Empty);   // on success, check for updates
-                //else
-                    StartUpError();     // on failure, call StartUpError();
-            };
+
             // Set UrlCaptureFailed handler
             CaptureControl.UrlCaptureFailed += (o, args) =>
             {
@@ -51,19 +45,19 @@ namespace upScreen
 
         #region Form Event Handlers
 
-        private void frmCapture_Load(object sender, EventArgs e)
+        private async void frmCapture_Load(object sender, EventArgs e)
         {            
-            //  Setup the forms
+            // Setup the forms
             _fAccount.Tag = this;
 
             CapturedImage.Link = "";
             CapturedImage.Uploaded = false;
 
             // If Host/Username/Password are not set, call StartUpError, otherwise check the account
-            if ( (new[] { Common.Profile.Host, Common.Profile.Username, Common.Profile.Password }).Any(String.IsNullOrEmpty))
+            if (Common.Profile.IsNotSet)
                 StartUpError();
             else
-                Client.CheckAccount();
+                await CheckAccount();
 
             // Checks for previous instance of this app and kills it, if it finds it
             var tKillPrevInstances = new Thread (() =>
@@ -315,6 +309,7 @@ namespace upScreen
         #endregion
 
         #region Update System
+
         private WebBrowser br;        
         private void CheckForUpdate(object sender, EventArgs e)
         {
@@ -355,9 +350,25 @@ namespace upScreen
                 Common.KillOrWait();
             }
         }
+
         #endregion
 
         #region Functions
+
+        public async Task CheckAccount()
+        {
+            var connectResult = await Client.CheckAccount();
+
+            if (!connectResult)
+            {
+                StartUpError();
+            }
+            else if (Common.IsImageCaptured)
+            {
+                // If the image has been captured, start the upload
+                await CaptureControl.UploadImage();
+            }
+        }
 
         /// <summary>
         /// If connected to the saved FTP account fails, 
@@ -389,7 +400,7 @@ namespace upScreen
                 ToolStripMenuItem item = new ToolStripMenuItem(p);
                 // When the item is clicked, check it (also uncheck all other menu items)
                 // and try to connect to the corresponding account.
-                item.Click += (s, ar) =>
+                item.Click += async (s, ar) =>
                     {
                         foreach (ToolStripMenuItem it in accountToolStripMenuItem.DropDownItems)
                             it.Checked = false;
@@ -401,15 +412,15 @@ namespace upScreen
                         Common.Profile = new Profile();
                         Common.Profile = Settings.Profiles[i];
 
-                        Client.CheckAccount();
+                        await CheckAccount();
 
                         _activeAccount = i;
                         RefreshFolderList();
                     };
                 if (Settings.ProfileTitles[_activeAccount] == p)
                     item.Checked = true;
-
-                accountToolStripMenuItem.DropDownItems.Add(item);                
+                
+                accountToolStripMenuItem.DropDownItems.Add(item);
             }
         }
 

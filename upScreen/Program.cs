@@ -80,8 +80,8 @@ namespace upScreen
         /// </summary>
         private static bool CheckArgs(string[] args)
         {
-            foreach (string s in args.Where(File.Exists))            
-                Profile.ArgFiles.Add(s);            
+            foreach (string s in args.Where(File.Exists))
+                Profile.ArgFiles.Add(s);
 
             return args.Any(File.Exists);
         }

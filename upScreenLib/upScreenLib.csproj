@@ -43,6 +43,9 @@
     <Reference Include="Renci.SshNet, Version=2016.0.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
       <HintPath>..\upScreen\packages\SSH.NET.2016.0.0\lib\net40\Renci.SshNet.dll</HintPath>
     </Reference>
+    <Reference Include="Renci.SshNet.Async, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\upScreen\packages\Renci.SshNet.Async.1.1.0.0\lib\net40\Renci.SshNet.Async.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -69,7 +72,9 @@
     <Compile Include="WinApiWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
