@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace upScreenLib
 {
@@ -19,14 +19,17 @@ namespace upScreenLib
 
         public List<RemoteFolder> RemoteFolders = new List<RemoteFolder>();
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public ImageExtensions Extension = ImageExtensions.PNG;
 
         public int FileLenght = 5;
 
         public string Pattern;
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public FtpProtocol Protocol = FtpProtocol.FTP;
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public FtpsMethod FtpsInvokeMethod;
 
         public int DefaultFolder = 0;
