@@ -201,7 +201,7 @@ namespace upScreen.Forms
         {
             // Exit if there's no other account saved
             if (Settings.Profiles.Count == 0) 
-                Common.KillOrWait(true);
+                Common.KillProcess();
 
             Close();
         }
@@ -210,7 +210,7 @@ namespace upScreen.Forms
         {
             // Exit if there's no other account saved
             if (Settings.Profiles.Count == 0)
-                Common.KillOrWait(true);
+                Common.KillProcess();
         }
 
         private string ConvertNodePath(TreeNode tn)

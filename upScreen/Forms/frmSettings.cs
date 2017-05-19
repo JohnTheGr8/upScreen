@@ -53,7 +53,7 @@ namespace upScreen.Forms
             {
                 Settings.Clear();
                 Application.Restart();
-                Common.KillOrWait(true);
+                Common.KillProcess();
             }
             // otherwise, just remove the selected account and save
             int i = cAccounts.SelectedIndex;            
@@ -121,7 +121,7 @@ namespace upScreen.Forms
             Settings.Save();
         }
 
-        private void bPickFolders_Click(object sender, EventArgs e)
+        private async void bPickFolders_Click(object sender, EventArgs e)
         {
             if (frmCapture._activeAccount != cAccounts.SelectedIndex)
             {
@@ -130,7 +130,7 @@ namespace upScreen.Forms
                 Common.Profile = new Profile();
                 Common.Profile = Settings.Profiles[cAccounts.SelectedIndex];
 
-                Client.TryConnect();
+                await Client.TryConnect();
             }
 
             // Show the Pick-Folders dialog (slightly modified Add-Account dialog)
@@ -151,7 +151,7 @@ namespace upScreen.Forms
                 Common.Profile = new Profile();
                 Common.Profile = Settings.Profiles[frmCapture._activeAccount];
 
-                Client.CheckAccount();
+                await Client.CheckAccount();
             }
         }
 

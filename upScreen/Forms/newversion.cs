@@ -31,23 +31,23 @@ namespace upScreen
             }
             catch { }
 
-            Common.KillOrWait(true);
+            Common.KillProcess();
         }
 
         private void bLearnMore_Click(object sender, EventArgs e)
         {
             Common.ViewInBrowser("http://getupscreen.com");
-            Common.KillOrWait(true);
+            Common.KillProcess();
         }
 
         private void bClose_Click(object sender, EventArgs e)
         {
-            Common.KillOrWait();
+            Common.KillProcess();
         }
 
         private void newversion_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Common.KillOrWait();
+            Common.KillProcess();
         }
     }
 }

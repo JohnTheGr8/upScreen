@@ -26,8 +26,6 @@ namespace upScreenLib
         private const string AllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         // What has finished? What next?
         public static bool KillApp = false;
-        public static bool ImageUploaded = false;
-        public static bool UpdateChecked = false;
         public static bool OtherFormOpen = false;
         public static bool IsImageCaptured = false;
 
@@ -88,7 +86,7 @@ namespace upScreenLib
         /// Get the HTTP link of the captured image
         /// </summary>
         /// <returns></returns>
-        public static string GetLink()
+        public static string GetLink(string name)
         {
             string link = Profile.RemoteHttpPath;
 
@@ -98,33 +96,24 @@ namespace upScreenLib
             if (!link.EndsWith(@"/"))
                 link = link + @"/";
 
-            link = link + CapturedImage.Name;
+            link = link + name;
             return link.Replace(" ", "%20");
         }
 
         /// <summary>
         /// Kill the process, make it look like an accident...
         /// </summary>
-        /// <param name="forceKill">When true: force kill the process</param>
-        public static void KillOrWait(bool forceKill = false)
+        public static void KillProcess()
         {
-            if (forceKill) Process.GetCurrentProcess().Kill();
-            
-            if (!ImageUploaded)
-                KillApp = true;
-            else if (UpdateChecked)            
-                Process.GetCurrentProcess().Kill();
+            Process.GetCurrentProcess().Kill();
         }
 
         /// <summary>
         /// View a link in the default browser
         /// </summary>
-        /// <param name="link">if left null, open the link from CapturedImage.Link</param>
-        public static void ViewInBrowser(string link = null)
+        public static void ViewInBrowser(string link)
         {
-            if ((CapturedImage.Link == string.Empty || !OpenInBrowser) && string.IsNullOrWhiteSpace(link)) return;
-
-            Process.Start(link ?? CapturedImage.Link);
+            Process.Start(link);
         }
 
         /// <summary>

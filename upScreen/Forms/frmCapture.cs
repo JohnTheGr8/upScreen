@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using upScreenLib.LogConsole;
 using upScreen.Forms;
 using upScreenLib;
+using System.Collections.Generic;
+using System.Net;
+using System.IO;
 
 namespace upScreen
 {
@@ -31,15 +34,15 @@ namespace upScreen
         public frmCapture()
         {
             InitializeComponent();
-            // Set UploadComplete handlers
-            CaptureControl.UploadComplete += CheckForUpdate;
+
+            CaptureControl.CaptureComplete += async (o, e) => await ProcessCapturedImages();
 
             // Set UrlCaptureFailed handler
             CaptureControl.UrlCaptureFailed += (o, args) =>
             {
                 // Warn user and exit.
                 MessageBox.Show("The provided URL could not be processed.", "upScreen Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Common.KillOrWait(true);
+                Common.KillProcess();
             };
         }
 
@@ -49,15 +52,6 @@ namespace upScreen
         {            
             // Setup the forms
             _fAccount.Tag = this;
-
-            CapturedImage.Link = "";
-            CapturedImage.Uploaded = false;
-
-            // If Host/Username/Password are not set, call StartUpError, otherwise check the account
-            if (Common.Profile.IsNotSet)
-                StartUpError();
-            else
-                await CheckAccount();
 
             // Checks for previous instance of this app and kills it, if it finds it
             var tKillPrevInstances = new Thread (() =>
@@ -75,17 +69,10 @@ namespace upScreen
                 });
             tKillPrevInstances.Start();
 
-            RefreshAccountList();
-            RefreshFolderList();
-
-            _activeAccount = Settings.DefaultProfile;
-
             // If uploading a file, hide the form and start uploading
             if (Profile.FromFileMenu)
             {
                 _otherformopen = true;
-                Visible = false;
-                Hide();
                 CaptureControl.CaptureFromArgs();
             }
             else
@@ -110,24 +97,36 @@ namespace upScreen
                 Size = new Size(width, height);
                 Location = new Point(left, top);
             }
+
+            // If Host/Username/Password are not set, call StartUpError,
+            // otherwise check the account
+            if (Common.Profile.IsNotSet)
+                StartUpError();
+            else
+                await CheckAccount();
+
+            // Refresh options in right-click menus
+            _activeAccount = Settings.DefaultProfile;
+            RefreshAccountList();
+            RefreshFolderList();
         }
 
         // Kill the app if the app lost focus
         private void frmCapture_Leave(object sender, EventArgs e)
         {
-            if (!_otherformopen) Common.KillOrWait(true);
+            if (!_otherformopen) Common.KillProcess();
         }
 
         // Kill the app if the app lost focus
         private void frmCapture_Deactivate(object sender, EventArgs e)
         {
-            if (ActiveForm != this && !_otherformopen) Common.KillOrWait(true);
+            if (ActiveForm != this && !_otherformopen) Common.KillProcess();
         }
 
         // Kill the app when ESC pressed
         private void frmCapture_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape) Common.KillOrWait(true);
+            if (e.KeyCode == Keys.Escape) Common.KillProcess();
         }
 
         private Point NativeClickPoint;
@@ -211,7 +210,7 @@ namespace upScreen
                         string errorcase = (MousePosition.X == pbSelection.Location.X) ? "width" : "height";
                         string msg = string.Format("Image {0} cannot be null", errorcase);
                         MessageBox.Show(null, msg, "upScreen", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Common.KillOrWait(true);
+                        Common.KillProcess();
                         return;
                     }
 
@@ -245,16 +244,28 @@ namespace upScreen
                     }
                     catch
                     {
-                        Common.KillOrWait(true);
+                        Common.KillProcess();
                     }                
                 }
+            }
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+
+            // Dont show the form if we're uploading
+            // files from the context menu
+            if (Profile.FromFileMenu)
+            {
+                this.Visible = false;
             }
         }
 
         #endregion
 
         #region Context Menu Handlers
-        
+
         // Capture full screen
         private void fullScreenToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -303,51 +314,33 @@ namespace upScreen
 
         private void cancelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Common.KillOrWait(true);
+            Common.KillProcess();
         }
 
         #endregion
 
         #region Update System
 
-        private WebBrowser br;        
-        private void CheckForUpdate(object sender, EventArgs e)
+        private async Task CheckUpdateAsync()
         {
             try
             {
-                br = new WebBrowser();
-                br.DocumentCompleted += browser_DocumentCompleted;
-                br.Navigate(@"http://getupscreen.com/version.txt");
-            }
-            catch (Exception ex)
-            {
-                Log.Write(l.Debug, "Error with version checking: {0}", ex.Message);
+                var client = new WebClient();
+                var address = "http://getupscreen.com/version.txt";
+                var version = await client.DownloadStringTaskAsync(address);
 
-                Common.KillOrWait();
-            }
-        }
-        
-        private void browser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
-        {
-            try
-            {
-                string version = br.Document.Body.InnerText;
                 Log.Write(l.Debug, "Current Version: {0} Installed Version: {1}", version, Application.ProductVersion);
-                Common.UpdateChecked = true;
 
                 if (version != Application.ProductVersion)
                 {
                     // show dialog box for download now, learn more and remind me next time
-                    newversion nvform = new newversion(version) {Tag = this};
-                    nvform.ShowDialog();                                       
+                    newversion nvform = new newversion(version) { Tag = this };
+                    nvform.ShowDialog();
                 }
-                else
-                    Common.KillOrWait();
             }
-            catch
+            catch (Exception ex)
             {
-                Log.Write(l.Error, "Server down");
-                Common.KillOrWait();
+                Log.Write(l.Debug, "Error with version checking: {0}", ex.Message);
             }
         }
 
@@ -355,18 +348,64 @@ namespace upScreen
 
         #region Functions
 
+        private async Task ProcessCapturedImages()
+        {
+            // upload captured images if we're ready
+            await CaptureControl.CheckStartUpload();
+
+            if (!Client.isConnected) return;
+
+            // URLs to all uploaded images
+            var allLinks = new List<string>();
+            foreach (var image in CaptureControl.CapturedImages)
+            {
+                var link = Common.GetLink(image.Name);
+                allLinks.Add(link);
+            }
+
+            // Copy image links (?)
+            if (Common.CopyLink)
+            {
+                var textToCopy = string.Join(Environment.NewLine, allLinks);
+                Clipboard.SetText(textToCopy);
+            }
+
+            foreach (var image in CaptureControl.CapturedImages)
+            {
+                // todo: this is probably no longer necessary
+                // Delete temp files
+                if (!Profile.FromFileMenu)
+                    File.Delete(image.LocalPath);
+
+                // Open image link in browser (?)
+                if (Common.OpenInBrowser)
+                {
+                    var link = Common.GetLink(image.Name);
+                    Common.ViewInBrowser(link);
+                }
+            }
+
+            // New version?
+            await CheckUpdateAsync();
+
+            // Time to go
+            Common.KillProcess();
+        }
+
         public async Task CheckAccount()
         {
+            // Try to connect
             var connectResult = await Client.CheckAccount();
 
             if (!connectResult)
             {
+                // Connection failed
                 StartUpError();
             }
             else if (Common.IsImageCaptured)
             {
-                // If the image has been captured, start the upload
-                await CaptureControl.UploadImage();
+                // Connection succeeded, and user has already captured an image
+                await ProcessCapturedImages();
             }
         }
 

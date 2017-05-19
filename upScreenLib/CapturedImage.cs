@@ -1,31 +1,11 @@
-﻿using System.Drawing;
-
-namespace upScreenLib
+﻿namespace upScreenLib
 {
-    public static class CapturedImage
+    public class CapturedImage
     {
-        public static Image Image
-        { get; set; }
+        public string LocalPath;
 
-        public static string LocalPath
-        { get; set; }
+        public string RemotePath;
 
-        public static string Username
-        { get; set; }
-
-        public static string RemotePath
-        { get; set; }
-
-        public static string Name
-        { get; set; }
-
-        public static string Link
-        { get; set; }
-
-        public static bool Uploaded
-        { get; set; }
-
-        public static Bitmap Bmp
-        { get; set; }
+        public string Name;
     }
 }

@@ -6,17 +6,26 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading.Tasks;
 using upScreenLib.LogConsole;
+using System.Linq;
 
 namespace upScreenLib
 {
     public class CaptureControl
     {
-        // Event raised when the upload has been completed
-        public static event EventHandler<EventArgs> UploadComplete;
+        // Event raised when the image(s) has been captured
+        public static event EventHandler CaptureComplete;
+
         // Event raised when the given url cannot be processed correctly
         public static event EventHandler<EventArgs> UrlCaptureFailed;
+
         // The screen which we're going to capture, defaults to the primary screen
         public static Screen CaptureScreen = Screen.PrimaryScreen;
+
+        // All images captured in this session
+        public static List<CapturedImage> CapturedImages = new List<CapturedImage>();
+
+        // Screenshot of the entire CaptureScreen
+        private static Bitmap FullScreen;
 
         #region Capture Full Screen
 
@@ -24,20 +33,7 @@ namespace upScreenLib
         {
             GetBackgroundImage();
 
-            CapturedImage.Image = CapturedImage.Bmp;
-
-            // Generate a random name for the file
-            Common.Random = Common.RandomString(Common.Profile.FileLenght);
-            CapturedImage.Name = Common.Random + Common.GetFormat();
-
-            // Get the image link, copy (?) to clipboard
-            CapturedImage.Link = Common.GetLink();
-            if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
-
-            // If the user's account works, start uploading
-            CheckStartUpload();
-            // raise UploadComplete to start looking for software updates
-            UploadComplete(null, EventArgs.Empty);
+            SaveImage(FullScreen);
         }
 
         #endregion
@@ -46,20 +42,9 @@ namespace upScreenLib
 
         public static void CaptureArea(Rectangle area)
         {
-            CapturedImage.Image = Crop(CapturedImage.Bmp, area);
+            var image = Crop(FullScreen, area);
 
-            // Generate a random name for the file
-            Common.Random = Common.RandomString(Common.Profile.FileLenght);
-            CapturedImage.Name = Common.Random + Common.GetFormat();
-
-            // Get the image link, copy (?) to clipboard
-            CapturedImage.Link = Common.GetLink();
-            if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
-
-            // If the user's account works, start uploading
-            CheckStartUpload();
-            // raise UploadComplete to start looking for software updates
-            UploadComplete(null, EventArgs.Empty);
+            SaveImage(image);
         }
 
         #endregion
@@ -110,21 +95,11 @@ namespace upScreenLib
             }
 
             // Crop the full-screen image at the position/dimmensions of the selected window
-            CapturedImage.Image = Crop(CapturedImage.Bmp, windowRect);
+            var image = Crop(FullScreen, windowRect);
 
             Common.OtherFormOpen = true;
-            // Generate a random name for the file
-            Common.Random = Common.RandomString(Common.Profile.FileLenght);
-            CapturedImage.Name = Common.Random + Common.GetFormat();
 
-            // Get the image link, copy (?) to clipboard
-            CapturedImage.Link = Common.GetLink();
-            if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
-
-            // If the user's account works, start uploading
-            CheckStartUpload();
-            // raise UploadComplete to start looking for software updates
-            UploadComplete(null, EventArgs.Empty);
+            SaveImage(image);
         }
 
         #endregion
@@ -137,27 +112,15 @@ namespace upScreenLib
         /// </summary>
         public static void CaptureFromArgs()
         {
-            var li = new List<string>(Profile.ArgFiles);
-            foreach (string s in li)
+            foreach (string filePath in Profile.ArgFiles)
             {
-                // Load the image from the file path found in arguements
-                CapturedImage.Image = Image.FromFile(s);
-                CapturedImage.LocalPath = s;
-
                 Common.OtherFormOpen = true;
-                // Generate a random name for the file
-                Common.Random = Common.RandomString(Common.Profile.FileLenght);
-                CapturedImage.Name = Common.Random + Common.GetFormat(CapturedImage.Image.RawFormat);
 
-                // Get the image link, copy (?) to clipboard
-                CapturedImage.Link = Common.GetLink();
-                if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
-
-                // If the user's account works, start uploading
-                CheckStartUpload();
+                SaveImage(filePath);
             }
 
-            UploadComplete(null, EventArgs.Empty);
+            // raise CaptureComplete to start uploading
+            CaptureComplete(null, EventArgs.Empty);
         }
 
         #endregion        
@@ -192,31 +155,43 @@ namespace upScreenLib
             return rect;
         }
 
+        public static void SaveImage(Image image)
+        {
+            var captureName = Common.RandomString(Common.Profile.FileLenght) + Common.GetFormat();
+
+            var info = new CapturedImage
+            {
+                Name = captureName,
+                LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + captureName),
+                RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
+            };
+
+            image.Save(info.LocalPath);
+            CapturedImages.Add(info);
+
+            // raise CaptureComplete to start uploading
+            CaptureComplete(null, EventArgs.Empty);
+        }
+
+        public static void SaveImage(string localPath)
+        {
+            var image = Image.FromFile(localPath);
+            var captureName = Common.RandomString(Common.Profile.FileLenght) + Common.GetFormat(image.RawFormat);
+
+            var info = new CapturedImage
+            {
+                Name = captureName,
+                LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + captureName),
+                RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
+            };
+
+            image.Save(info.LocalPath);
+            CapturedImages.Add(info);
+        }
+
         #endregion
 
         #region Image Uploading
-
-        /// <summary>
-        /// Called when the image has finished uploading. 
-        /// Deletes the local file, opens the uploaded image in browser and closes upScreen
-        /// </summary>
-        public static void ImageUploaded(object sender = null)
-        {
-            try
-            {
-                if (!Profile.FromFileMenu)
-                    File.Delete(CapturedImage.LocalPath);
-
-                Common.ViewInBrowser();
-            }
-            catch (Exception ex) { Log.Write(l.Error, ex.Message); }
-
-            Profile.ArgFiles.Remove(CapturedImage.LocalPath);
-            Common.ImageUploaded = Profile.ArgFiles.Count == 0;
-
-            if (Common.KillApp)
-                Common.KillOrWait();
-        }
 
         /// <summary>
         /// Start the upload if the client is connected and ready to go
@@ -224,31 +199,21 @@ namespace upScreenLib
         public static async Task CheckStartUpload()
         {
             if (!Client.taskCheckAccount.IsCompleted)
+            {
                 Common.IsImageCaptured = true;
+            }
             else
-                await UploadImage();
+                await UploadImages();
         }
 
         /// <summary>
-        /// Upload the captured image
+        /// Upload the captured images
         /// </summary>
-        public static async Task UploadImage()
+        public static async Task UploadImages()
         {
-            CapturedImage.LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + CapturedImage.Name);
-            CapturedImage.RemotePath = Common.Combine(Common.Profile.RemoteFolder, CapturedImage.Name);
+            var uploadTasks = CapturedImages.Select(x => Client.UploadImage(x));
 
-            try
-            {
-                Log.Write(l.Client, "lP: {0}", CapturedImage.LocalPath);
-                CapturedImage.Image.Save(CapturedImage.LocalPath);
-
-                CapturedImage.Link = Common.GetLink();
-                if (Common.CopyLink)
-                    Clipboard.SetText(CapturedImage.Link);
-            }
-            catch (Exception ex) { Log.Write(l.Error, ex.Message); }
-
-            await Client.UploadCapturedImage();
+            await Task.WhenAll(uploadTasks);
         }
 
         #endregion        
@@ -264,7 +229,7 @@ namespace upScreenLib
             var gfx = Graphics.FromImage(bmp);
             gfx.CopyFromScreen(CaptureScreen.Bounds.X, CaptureScreen.Bounds.Y, 0, 0, CaptureScreen.Bounds.Size, CopyPixelOperation.SourceCopy);
 
-            CapturedImage.Bmp = bmp;
+            FullScreen = bmp;
         }
 
         /// <summary>
@@ -272,32 +237,24 @@ namespace upScreenLib
         /// </summary>
         public static void GetFromClipboard()
         {
+            Image image = null;
+
             // Load the image from a copied image
             if (Clipboard.ContainsImage())
-                CapturedImage.Image = Clipboard.GetImage();
+                image = Clipboard.GetImage();
             // Load the image from a copied image file
             else if (Clipboard.ContainsFileDropList())
-                CapturedImage.Image = Image.FromFile(Clipboard.GetFileDropList()[0]);
+                image = Image.FromFile(Clipboard.GetFileDropList()[0]);
             // Load the image from a copied image url
             else if (Common.ImageUrlInClipboard)
-                CapturedImage.Image = GetFromUrl(Clipboard.GetText());
+                image = GetFromUrl(Clipboard.GetText());
 
             // Prevent null reference exception
-            if (CapturedImage.Image == null) return;
+            if (image == null) return;
 
             Common.OtherFormOpen = true;
-            // Generate a random name for the file
-            Common.Random = Common.RandomString(Common.Profile.FileLenght);
-            CapturedImage.Name = Common.Random + Common.GetFormat(CapturedImage.Image.RawFormat);
 
-            // Get the image link, copy (?) to clipboard
-            CapturedImage.Link = Common.GetLink();
-            if (Common.CopyLink) Clipboard.SetText(CapturedImage.Link);
-
-            // If the user's account works, start uploading
-            CheckStartUpload();
-            // raise UploadComplete to start looking for software updates
-            UploadComplete(null, EventArgs.Empty);
+            SaveImage(image);
         }
 
         /// <summary>

@@ -51,7 +51,7 @@ namespace upScreenLib
                         Common.Profile.Username, Common.Profile.Password);
 
                 // ugly but eh
-                await Task.Run(() => sftpc.Connect());
+                await Task.Run(async () => sftpc.Connect());
             }
         }
 
@@ -143,13 +143,13 @@ namespace upScreenLib
         /// <summary>
         /// Upload the captured image, file path found in CapturedImage.LocalPath
         /// </summary>
-        public static async Task UploadCapturedImage()
+        public static async Task UploadImage(CapturedImage image)
         {
-            using (var localStream = File.OpenRead(CapturedImage.LocalPath))
+            using (var localStream = File.OpenRead(image.LocalPath))
             {
                 if (FTP)
                 {
-                    var remoteStream = await ftpc.OpenWriteAsync(CapturedImage.RemotePath);
+                    var remoteStream = await ftpc.OpenWriteAsync(image.RemotePath);
 
                     var buf = new byte[ftpc.TransferChunkSize];
                     int read;
@@ -162,11 +162,9 @@ namespace upScreenLib
                 }
                 else
                 {
-                    await sftpc.UploadAsync(localStream, CapturedImage.RemotePath);
+                    await sftpc.UploadAsync(localStream, image.RemotePath);
                 }
             }
-
-            CaptureControl.ImageUploaded();
         }
 
         #endregion
