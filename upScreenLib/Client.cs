@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Renci.SshNet.Async;
+using upScreenLib.LogConsole;
 
 namespace upScreenLib
 {
@@ -25,6 +26,8 @@ namespace upScreenLib
         /// </summary>
         public static async Task Connect()
         {
+            Log.Write(l.Client, $"Connecting {Common.Profile.Username}@{Common.Profile.Host}");
+
             if (FTP)
             {
                 ftpc = new FtpClient(Common.Profile.Host, Common.Profile.Username, Common.Profile.Password);
@@ -93,6 +96,8 @@ namespace upScreenLib
                 ftpc.Disconnect();
             else
                 sftpc.Disconnect();
+
+            Log.Write(l.Client, "Disconnected");
         }
 
         /// <summary>
@@ -145,22 +150,15 @@ namespace upScreenLib
         /// </summary>
         public static async Task UploadImage(CapturedImage image)
         {
-            using (var localStream = File.OpenRead(image.LocalPath))
-            {
-                if (FTP)
-                {
-                    var remoteStream = await ftpc.OpenWriteAsync(image.RemotePath);
+            Log.Write(l.Client, $"Uploading {image.Name} to {image.RemotePath}");
 
-                    var buf = new byte[ftpc.TransferChunkSize];
-                    int read;
-                    while ((read = await localStream.ReadAsync(buf, 0, buf.Length)) > 0)
-                    {
-                        await remoteStream.WriteAsync(buf, 0, read);
-                    }
-                    //TODO: switch to this when FluentFTP's UploadFileAsync is patched:
-                    //await ftpc.UploadFileAsync(CapturedImage.LocalPath, CapturedImage.RemotePath);
-                }
-                else
+            if (FTP)
+            {
+                await ftpc.UploadFileAsync(image.LocalPath, image.RemotePath);
+            }
+            else
+            {
+                using (var localStream = File.OpenRead(image.LocalPath))
                 {
                     await sftpc.UploadAsync(localStream, image.RemotePath);
                 }

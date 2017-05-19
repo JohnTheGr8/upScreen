@@ -353,7 +353,7 @@ namespace upScreen
             // upload captured images if we're ready
             await CaptureControl.CheckStartUpload();
 
-            if (!Client.isConnected) return;
+            if (!Client.taskCheckAccount.IsCompleted) return;
 
             // URLs to all uploaded images
             var allLinks = new List<string>();
@@ -375,7 +375,10 @@ namespace upScreen
                 // todo: this is probably no longer necessary
                 // Delete temp files
                 if (!Profile.FromFileMenu)
+                {
+                    Log.Write(l.Info, $"Cleaning up temp image file: {image.LocalPath}");
                     File.Delete(image.LocalPath);
+                }
 
                 // Open image link in browser (?)
                 if (Common.OpenInBrowser)
@@ -397,6 +400,8 @@ namespace upScreen
             // Try to connect
             var connectResult = await Client.CheckAccount();
 
+            Log.Write(l.Info, $"Connected successfully: {connectResult}");
+
             if (!connectResult)
             {
                 // Connection failed
@@ -405,6 +410,7 @@ namespace upScreen
             else if (Common.IsImageCaptured)
             {
                 // Connection succeeded, and user has already captured an image
+                Log.Write(l.Info, "Images already captured, time to upload");
                 await ProcessCapturedImages();
             }
         }

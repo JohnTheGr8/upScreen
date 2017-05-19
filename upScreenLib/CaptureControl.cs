@@ -33,6 +33,8 @@ namespace upScreenLib
         {
             GetBackgroundImage();
 
+            Log.Write(l.Info, "Full screeen mode");
+
             SaveImage(FullScreen);
         }
 
@@ -42,6 +44,8 @@ namespace upScreenLib
 
         public static void CaptureArea(Rectangle area)
         {
+            Log.Write(l.Info, $"Area mode, x: {area.X} y: {area.Y} width: {area.Width} height: {area.Height}");
+
             var image = Crop(FullScreen, area);
 
             SaveImage(image);
@@ -60,7 +64,8 @@ namespace upScreenLib
 
             if (window == IntPtr.Zero) return;
 
-            Log.Write(l.Debug, "Capturing window: {0}", ApiWrapper.Window.GetWindowText(window));
+            var windowText = ApiWrapper.Window.GetWindowText(window);
+            Log.Write(l.Info, $"Window mode: {windowText}");
 
             // Find the window from the click point
             while (ApiWrapper.Window.IsChild(ApiWrapper.Window.GetParent(window), window))
@@ -112,6 +117,8 @@ namespace upScreenLib
         /// </summary>
         public static void CaptureFromArgs()
         {
+            Log.Write(l.Info, $"Context menu mode: {Profile.ArgFiles.Count} files");
+
             foreach (string filePath in Profile.ArgFiles)
             {
                 Common.OtherFormOpen = true;
@@ -166,6 +173,8 @@ namespace upScreenLib
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 
+            Log.Write(l.Info, $"Saving image as: {info.LocalPath}");
+
             image.Save(info.LocalPath);
             CapturedImages.Add(info);
 
@@ -185,6 +194,8 @@ namespace upScreenLib
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 
+            Log.Write(l.Info, $"Saving image as: {info.LocalPath}");
+
             image.Save(info.LocalPath);
             CapturedImages.Add(info);
         }
@@ -200,6 +211,7 @@ namespace upScreenLib
         {
             if (!Client.taskCheckAccount.IsCompleted)
             {
+                Log.Write(l.Info, "Image captured, client not ready to upload yet");
                 Common.IsImageCaptured = true;
             }
             else
@@ -211,9 +223,10 @@ namespace upScreenLib
         /// </summary>
         public static async Task UploadImages()
         {
-            var uploadTasks = CapturedImages.Select(x => Client.UploadImage(x));
-
-            await Task.WhenAll(uploadTasks);
+            foreach (var image in CapturedImages)
+            {
+                await Client.UploadImage(image);
+            }
         }
 
         #endregion        
@@ -241,10 +254,14 @@ namespace upScreenLib
 
             // Load the image from a copied image
             if (Clipboard.ContainsImage())
+            {
+                Log.Write(l.Info, "Clipboard mode, copied image");
                 image = Clipboard.GetImage();
+            }
             // Load the image from a copied image file
             else if (Clipboard.ContainsFileDropList())
             {
+                Log.Write(l.Info, "Clipboard mode, file list");
                 foreach (var localFile in Clipboard.GetFileDropList())
                 {
                     SaveImage(localFile);
@@ -254,7 +271,11 @@ namespace upScreenLib
             }
             // Load the image from a copied image url
             else if (Common.ImageUrlInClipboard)
-                image = GetFromUrl(Clipboard.GetText());
+            {
+                var url = Clipboard.GetText();
+                Log.Write(l.Info, $"Clipboard mode, url: {url}");
+                image = GetFromUrl(url);
+            }
 
             // Prevent null reference exception
             if (image == null) return;
