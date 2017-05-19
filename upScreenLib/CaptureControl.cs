@@ -244,7 +244,14 @@ namespace upScreenLib
                 image = Clipboard.GetImage();
             // Load the image from a copied image file
             else if (Clipboard.ContainsFileDropList())
-                image = Image.FromFile(Clipboard.GetFileDropList()[0]);
+            {
+                foreach (var localFile in Clipboard.GetFileDropList())
+                {
+                    SaveImage(localFile);
+                }
+                // raise CaptureComplete to start uploading
+                CaptureComplete(null, EventArgs.Empty);
+            }
             // Load the image from a copied image url
             else if (Common.ImageUrlInClipboard)
                 image = GetFromUrl(Clipboard.GetText());
