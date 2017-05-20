@@ -16,10 +16,8 @@ namespace upScreenLib
         #region Fields
 
         // A static Profile instance to use from all forms/classes
-        public static Profile Profile;        
-        // Vars to determine what to do with the captured image (not saved to config)
-        public static bool CopyLink = true;
-        public static bool OpenInBrowser = true;
+        public static Profile Profile;
+
         // The allowed characters for the image file name
         private const string AllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         // What has finished? What next?

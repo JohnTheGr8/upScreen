@@ -24,6 +24,10 @@ namespace upScreenLib
 
         public int FileLenght = 5;
 
+        public bool OpenInBrowser = true;
+
+        public bool CopyToClipboard = true;
+
         public string Pattern;
 
         [JsonConverter(typeof(StringEnumConverter))]

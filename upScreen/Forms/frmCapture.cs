@@ -27,7 +27,7 @@ namespace upScreen
         private readonly frmAddAccount _fAccount = new frmAddAccount();
         private frmSettings _fSettings = new frmSettings();
 
-        public static int _activeAccount = 0;
+        public static int _activeAccount = Settings.DefaultProfile;
 
         #endregion
 
@@ -101,14 +101,19 @@ namespace upScreen
             // If Host/Username/Password are not set, call StartUpError,
             // otherwise check the account
             if (Common.Profile.IsNotSet)
+            {
                 StartUpError(false);
+                
+                // Refresh options in right-click menus
+                RefreshMenuItems();
+            }
             else
-                await CheckAccount();
+            {
+                // Refresh options in right-click menus
+                RefreshMenuItems();
 
-            // Refresh options in right-click menus
-            _activeAccount = Settings.DefaultProfile;
-            RefreshAccountList();
-            RefreshFolderList();
+                await CheckAccount();
+            }
         }
 
         // Kill the app if the app lost focus
@@ -287,16 +292,6 @@ namespace upScreen
             CaptureControl.GetFromClipboard();
         }
 
-        private void tmOpenInBrowser_Click(object sender, EventArgs e)
-        {
-            Common.OpenInBrowser = tmOpenInBrowser.Checked;
-        }
-
-        private void tmCopyLink_Click(object sender, EventArgs e)
-        {
-            Common.CopyLink = tmCopyLink.Checked;
-        }
-
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
         {            
             _onClick = false;
@@ -308,8 +303,8 @@ namespace upScreen
             pbSelection.Visible = false;
             CaptureControl.GetBackgroundImage();
             Show();
-            RefreshAccountList();
-            RefreshFolderList();
+
+            RefreshMenuItems();
         }
 
         private void cancelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -364,7 +359,7 @@ namespace upScreen
             }
 
             // Copy image links (?)
-            if (Common.CopyLink)
+            if (tmCopyLink.Checked)
             {
                 var textToCopy = string.Join(Environment.NewLine, allLinks);
                 Clipboard.SetText(textToCopy);
@@ -381,7 +376,7 @@ namespace upScreen
                 }
 
                 // Open image link in browser (?)
-                if (Common.OpenInBrowser)
+                if (tmOpenInBrowser.Checked)
                 {
                     var link = Common.GetLink(image.Name);
                     Common.ViewInBrowser(link);
@@ -431,6 +426,15 @@ namespace upScreen
 
             pbSelection.Visible = false;
             Show();
+        }
+
+        public void RefreshMenuItems()
+        {
+            tmOpenInBrowser.Checked = Settings.Profiles[_activeAccount].OpenInBrowser;
+            tmCopyLink.Checked = Settings.Profiles[_activeAccount].CopyToClipboard;
+
+            RefreshAccountList();
+            RefreshFolderList();
         }
 
         /// <summary>
@@ -495,6 +499,6 @@ namespace upScreen
             }
         }
 
-        #endregion        
+        #endregion
     }
 }

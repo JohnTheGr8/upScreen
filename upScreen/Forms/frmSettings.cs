@@ -19,6 +19,8 @@ namespace upScreen.Forms
             // Load the default account's Format and File-Length settings
             cFormat.SelectedIndex = (int)Common.Profile.Extension;
             nLenght.Value = Convert.ToDecimal(Common.Profile.FileLenght);
+            cOpenByDefault.Checked = Common.Profile.OpenInBrowser;
+            cCopyByDefault.Checked = Common.Profile.CopyToClipboard;
         }
 
         private void cFormat_SelectedIndexChanged(object sender, EventArgs e)
@@ -31,6 +33,20 @@ namespace upScreen.Forms
         private void nLenght_ValueChanged(object sender, EventArgs e)
         {
             Settings.Profiles[cAccounts.SelectedIndex].FileLenght = Convert.ToInt32(nLenght.Value);
+            // Save changes
+            Settings.Save();
+        }
+
+        private void cOpenByDefault_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Profiles[cAccounts.SelectedIndex].OpenInBrowser = cOpenByDefault.Checked;
+            // Save changes
+            Settings.Save();
+        }
+
+        private void cCopyByDefault_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Profiles[cAccounts.SelectedIndex].CopyToClipboard = cCopyByDefault.Checked;
             // Save changes
             Settings.Save();
         }
@@ -108,6 +124,8 @@ namespace upScreen.Forms
         {
             cFormat.SelectedIndex = (int)Settings.Profiles[cAccounts.SelectedIndex].Extension;
             nLenght.Value = Settings.Profiles[cAccounts.SelectedIndex].FileLenght;
+            cOpenByDefault.Checked = Settings.Profiles[cAccounts.SelectedIndex].OpenInBrowser;
+            cCopyByDefault.Checked = Settings.Profiles[cAccounts.SelectedIndex].CopyToClipboard;
             RefreshFolders();
         }
 

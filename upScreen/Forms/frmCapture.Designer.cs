@@ -35,6 +35,7 @@
             this.clipboardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.accountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.folderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tmOpenInBrowser = new System.Windows.Forms.ToolStripMenuItem();
             this.tmCopyLink = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,7 +43,6 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pbSelection = new upScreen.SelectionBox();
-            this.folderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -88,6 +88,12 @@
             this.accountToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.accountToolStripMenuItem.Text = "Account";
             // 
+            // folderToolStripMenuItem
+            // 
+            this.folderToolStripMenuItem.Name = "folderToolStripMenuItem";
+            this.folderToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.folderToolStripMenuItem.Text = "Folder";
+            // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
@@ -95,23 +101,17 @@
             // 
             // tmOpenInBrowser
             // 
-            this.tmOpenInBrowser.Checked = true;
             this.tmOpenInBrowser.CheckOnClick = true;
-            this.tmOpenInBrowser.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tmOpenInBrowser.Name = "tmOpenInBrowser";
             this.tmOpenInBrowser.Size = new System.Drawing.Size(191, 22);
             this.tmOpenInBrowser.Text = "Open link in browser";
-            this.tmOpenInBrowser.Click += new System.EventHandler(this.tmOpenInBrowser_Click);
             // 
             // tmCopyLink
             // 
-            this.tmCopyLink.Checked = true;
             this.tmCopyLink.CheckOnClick = true;
-            this.tmCopyLink.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tmCopyLink.Name = "tmCopyLink";
             this.tmCopyLink.Size = new System.Drawing.Size(191, 22);
             this.tmCopyLink.Text = "Copy link to clipboard";
-            this.tmCopyLink.Click += new System.EventHandler(this.tmCopyLink_Click);
             // 
             // toolStripSeparator3
             // 
@@ -141,12 +141,6 @@
             this.pbSelection.Size = new System.Drawing.Size(30, 29);
             this.pbSelection.TabIndex = 1;
             this.pbSelection.Visible = false;
-            // 
-            // folderToolStripMenuItem
-            // 
-            this.folderToolStripMenuItem.Name = "folderToolStripMenuItem";
-            this.folderToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.folderToolStripMenuItem.Text = "Folder";
             // 
             // frmCapture
             // 
