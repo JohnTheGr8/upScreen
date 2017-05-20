@@ -14,6 +14,8 @@ namespace upScreen.Forms
 
         public static bool _pickingFolders = false;
 
+        public static bool _updatingAccount = false;
+
         // Dictionary of cheked folders and their respective http paths
         private Dictionary<string, string> RemotePathsDictionary = new Dictionary<string, string>();
 
@@ -42,6 +44,19 @@ namespace upScreen.Forms
                 // List remote folders in treeview
                 await ListDirectories();
             }
+            else if (_updatingAccount)
+            {
+                this.Text = "Update Account Details";
+                gAccount.Enabled = true;
+                gPaths.Enabled = false;
+
+                // fill Account group
+                cMode.SelectedIndex = Common.Profile.Protocol == FtpProtocol.FTP ? 0 : 1;
+                tHost.Text = Common.Profile.Host;
+                nPort.Value = Common.Profile.Port;
+                tUsername.Text = Common.Profile.Username;
+                tPassword.Text = Common.Profile.Password;
+            }
         }
 
         private void cMode_SelectedIndexChanged(object sender, EventArgs e)
@@ -55,19 +70,32 @@ namespace upScreen.Forms
             _ftpOrSftp = cMode.SelectedIndex == 0;
             try
             {
-                Common.Profile = new Profile();
+                if (!_updatingAccount)
+                    Common.Profile = new Profile();
+
                 // Try connecting with the given account info
                 Common.Profile.AddAccount(tHost.Text, tUsername.Text, tPassword.Text, Convert.ToInt32(nPort.Value));
                 Common.Profile.Protocol = _ftpOrSftp ? FtpProtocol.FTP : FtpProtocol.SFTP;
 
                 await Client.Connect();
 
-                // On success:
-                await ListDirectories();
-                tHttpPath.Text = Common.Profile.Host;
-                gPaths.Enabled = true;
+                if (_updatingAccount)
+                {
+                    // If connecting with existing (modified) profile works,
+                    // save and exit
+                    Settings.Save();
+                    Close();
+                }
+                else
+                {
 
-                AcceptButton = bDone;
+                    // On success:
+                    await ListDirectories();
+                    tHttpPath.Text = Common.Profile.Host;
+                    gPaths.Enabled = true;
+
+                    AcceptButton = bDone;
+                }
             }
             catch (Exception ex)
             {
@@ -195,7 +223,7 @@ namespace upScreen.Forms
         private void bCancel_Click(object sender, EventArgs e)
         {
             // Exit if there's no other account saved
-            if (Settings.Profiles.Count == 0) 
+            if (Settings.Profiles.Count == 0 || _updatingAccount) 
                 Common.KillProcess();
 
             Close();

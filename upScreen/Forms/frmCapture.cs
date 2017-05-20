@@ -101,7 +101,7 @@ namespace upScreen
             // If Host/Username/Password are not set, call StartUpError,
             // otherwise check the account
             if (Common.Profile.IsNotSet)
-                StartUpError();
+                StartUpError(false);
             else
                 await CheckAccount();
 
@@ -405,9 +405,9 @@ namespace upScreen
             if (!connectResult)
             {
                 // Connection failed
-                StartUpError();
+                StartUpError(true);
             }
-            else if (Common.IsImageCaptured)
+            if (Common.IsImageCaptured)
             {
                 // Connection succeeded, and user has already captured an image
                 Log.Write(l.Info, "Images already captured, time to upload");
@@ -416,22 +416,21 @@ namespace upScreen
         }
 
         /// <summary>
-        /// If connected to the saved FTP account fails, 
-        /// show the NewAccount form
+        /// If connecting fails or no profile is yet set up, show the Add Account dialog
         /// </summary>
-        public void StartUpError()
+        public void StartUpError(bool accountExists)
         {
             _otherformopen = true;
             _onClick = false;
 
-            Invoke(new MethodInvoker(() =>
-                {
-                    Hide();
+            Hide();
 
-                    _fAccount.ShowDialog();
-                    pbSelection.Visible = false;
-                    Show();
-                }));
+            frmAddAccount._updatingAccount = accountExists;
+            _fAccount.ShowDialog();
+            frmAddAccount._updatingAccount = false;
+
+            pbSelection.Visible = false;
+            Show();
         }
 
         /// <summary>
