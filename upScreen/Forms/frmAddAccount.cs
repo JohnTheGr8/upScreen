@@ -90,14 +90,12 @@ namespace upScreen.Forms
             TreeNode first = new TreeNode { Text = "/" };
             tFolderTree.Nodes.Add(first);
             // Add an item for each folder in the root path
-            foreach (var c in await Client.List("."))
+            foreach (var folderName in await Client.ListFolders("."))
             {
-                if (c.Type != ClientItemType.Folder) continue;
-
-                TreeNode ParentNode = new TreeNode { Text = c.Name };
+                TreeNode ParentNode = new TreeNode { Text = folderName };
                 tFolderTree.Nodes.Add(ParentNode);
 
-                TreeNode ChildNode = new TreeNode { Text = c.Name };
+                TreeNode ChildNode = new TreeNode { Text = folderName };
                 ParentNode.Nodes.Add(ChildNode);
             }
 
@@ -123,19 +121,16 @@ namespace upScreen.Forms
                 e.Node.Nodes.Clear();
 
             // Add a new item to the tree for each remote folder
-            foreach (ClientItem c in await Client.List(path))
+            foreach (var folderName in await Client.ListFolders(path))
             {
-                // We only want to list folders...
-                if (c.Type != ClientItemType.Folder) continue;
-                
-                TreeNode ParentNode = new TreeNode { Text = c.Name };
+                TreeNode ParentNode = new TreeNode { Text = folderName };
                 e.Node.Nodes.Add(ParentNode);
 
                 // Check the Node we just added?
                 ParentNode.Checked =
                     RemotePathsDictionary.Any(x => x.Key == ConvertNodePath(e.Node.Nodes.Cast<TreeNode>().Last()));
 
-                TreeNode ChildNode = new TreeNode { Text = c.Name };
+                TreeNode ChildNode = new TreeNode { Text = folderName };
                 ParentNode.Nodes.Add(ChildNode);
             }
         }

@@ -101,48 +101,20 @@ namespace upScreenLib
         }
 
         /// <summary>
-        /// Returns a list of files/folders inside the given path (folder)
+        /// Returns a list of folders inside the given path (folder)
         /// </summary>
-        public static async Task<List<ClientItem>> List(string path)
+        public static async Task<IEnumerable<string>> ListFolders(string path)
         {
-            var l = new List<ClientItem>();
-
-            if (path.StartsWith("/"))
-                path = path.Substring(1);
-
             if (FTP)
-                foreach (var f in await ftpc.GetListingAsync(path))
-                {
-                    ClientItemType t;
-                    switch (f.Type)
-                    {
-                        case FtpFileSystemObjectType.File:
-                            t = ClientItemType.File;
-                            break;
-                        case FtpFileSystemObjectType.Directory:
-                            t = ClientItemType.Folder;
-                            break;
-                        default:
-                            t = ClientItemType.Other;
-                            break;
-                    }
-                    l.Add(new ClientItem { Name = f.Name, FullPath = f.FullName, Type = t });
-                }
+            {
+                var list = await ftpc.GetListingAsync(path);
+                return list.Where(x => x.Type == FtpFileSystemObjectType.Directory).Select(x => x.Name);
+            }
             else
-                foreach (var s in (await sftpc.ListDirectoryAsync(path)).Where(s => s.Name != "." && s.Name != ".."))
-                {
-                    ClientItemType t;
-                    if (s.IsRegularFile)
-                        t = ClientItemType.File;
-                    else if (s.IsDirectory)
-                        t = ClientItemType.Folder;
-                    else
-                        t = ClientItemType.Other;
-
-                    l.Add(new ClientItem { Name = s.Name, FullPath = s.FullName, Type = t });
-                }
-
-            return l;
+            {
+                var list = await sftpc.ListDirectoryAsync(path);
+                return list.Where(x => x.IsDirectory && x.Name != "." && x.Name != "..").Select(x => x.Name);
+            }
         }
 
         /// <summary>

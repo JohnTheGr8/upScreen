@@ -1,12 +1,5 @@
 ﻿namespace upScreenLib
 {
-    public enum ClientItemType
-    {
-        File,
-        Folder,
-        Other
-    }
-
     public enum FtpProtocol
     {
         FTP,

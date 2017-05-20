@@ -61,7 +61,6 @@
     <Compile Include="CaptureControl.cs" />
     <Compile Include="CapturedImage.cs" />
     <Compile Include="Client.cs" />
-    <Compile Include="ClientItem.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Console\aConsole.cs" />
     <Compile Include="Console\Log.cs" />
