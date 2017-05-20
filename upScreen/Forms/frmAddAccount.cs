@@ -72,7 +72,7 @@ namespace upScreen.Forms
             catch (Exception ex)
             {
                 // On failure:
-                Console.WriteLine("Error: " + ex.Message);
+                Log.Write(l.Error, "Error: " + ex.Message);
                 string msg = "Could not connect." + Environment.NewLine + "Please make sure you have typed in the right login information";
                 MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

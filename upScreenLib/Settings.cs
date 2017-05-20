@@ -8,14 +8,16 @@ namespace upScreenLib
 {
     public static class Settings
     {
-        private static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen");
+        public static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen");
         private static readonly string ConfigPath = Path.Combine(AppDataFolder, "settings.json");
 
         public static List<Profile> Profiles = new List<Profile>();
 
-        private static Profile CurrentProfile { get { return Profiles.Count > 0 ? Profiles[DefaultProfile] : new Profile(); } }
-        public static string[] ProfileTitles { get { return Profiles.Select(p => string.Format("{0}@{1}", p.Username, p.Host)).ToArray(); } }
-        public static int DefaultProfile { get { return Profiles.Any(a=>a.IsDefaultAccount) ?  Profiles.IndexOf(Profiles.Where(p => p.IsDefaultAccount).ToArray()[0]) : 0; } }
+        private static Profile CurrentProfile => Profiles.Count > 0 ? Profiles[DefaultProfile] : new Profile();
+
+        public static string[] ProfileTitles => Profiles.Select(p => $"{p.Username}@{p.Host}").ToArray();
+
+        public static int DefaultProfile => Profiles.Any(a => a.IsDefaultAccount) ? Profiles.IndexOf(Profiles.Where(p => p.IsDefaultAccount).ToArray()[0]) : 0;
 
         /// <summary>
         /// Load the user settings from the configuration file

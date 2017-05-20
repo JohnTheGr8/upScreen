@@ -20,14 +20,14 @@ namespace upScreenLib
         // Vars to determine what to do with the captured image (not saved to config)
         public static bool CopyLink = true;
         public static bool OpenInBrowser = true;
-        // The generated random name for our image file
-        public static string Random = null;
         // The allowed characters for the image file name
         private const string AllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         // What has finished? What next?
         public static bool KillApp = false;
         public static bool OtherFormOpen = false;
         public static bool IsImageCaptured = false;
+
+        private static Regex imageUrlMatcher = new Regex(@"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$");
 
         #endregion        
 
@@ -90,57 +90,35 @@ namespace upScreenLib
         {
             string link = Profile.RemoteHttpPath;
 
-            if (!link.StartsWith(@"http://"))
-                link = "http://" + link;
+            if (!link.StartsWith("http://") && !link.StartsWith("https://"))
+                link = $"http://{link}";
 
-            if (!link.EndsWith(@"/"))
-                link = link + @"/";
-
+            if (!link.EndsWith("/"))
+                link = link + "/";
+            
             link = link + name;
-            return link.Replace(" ", "%20");
+            return Uri.EscapeUriString(link);
         }
 
         /// <summary>
         /// Kill the process, make it look like an accident...
         /// </summary>
-        public static void KillProcess()
-        {
-            Process.GetCurrentProcess().Kill();
-        }
+        public static void KillProcess() => Process.GetCurrentProcess().Kill();
 
         /// <summary>
         /// View a link in the default browser
         /// </summary>
-        public static void ViewInBrowser(string link)
-        {
-            Process.Start(link);
-        }
+        public static void ViewInBrowser(string link) => Process.Start(link);
 
         /// <summary>
         /// Checks if the clipboard contains a file or list of files
         /// </summary>
-        public static bool ImageFileInClipboard
-        {
-            get
-            {
-                return Clipboard.ContainsFileDropList() && IsValidImage(Clipboard.GetFileDropList()[0]);
-            }
-        }
+        public static bool ImageFileInClipboard => Clipboard.ContainsFileDropList() && Clipboard.GetFileDropList().Cast<string>().All(IsValidImage);
 
         /// <summary>
         /// Checks if the clipboard contains a valid url
         /// </summary>        
-        public static bool ImageUrlInClipboard
-        {
-            get
-            {
-                if (!Clipboard.ContainsText()) return false;
-
-                var re = new Regex(@"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$");
-                // Does the Clipboard text match our url pattern?
-                return re.IsMatch(Clipboard.GetText());
-            }
-        }
+        public static bool ImageUrlInClipboard => Clipboard.ContainsText() && imageUrlMatcher.IsMatch(Clipboard.GetText());
 
         /// <summary>
         /// Check if the file contains an image by trying to load it
@@ -191,9 +169,6 @@ namespace upScreenLib
         /// <summary>
         /// Subsctract point b from point a
         /// </summary>
-        public static Point Substract(this Point a, Point b)
-        {
-            return new Point(a.X - b.X, a.Y - b.Y);
-        }
+        public static Point Substract(this Point a, Point b) => new Point(a.X - b.X, a.Y - b.Y);
     }
 }

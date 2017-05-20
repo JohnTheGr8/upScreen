@@ -81,9 +81,9 @@ namespace upScreen
         private static bool CheckArgs(string[] args)
         {
             foreach (string s in args.Where(File.Exists))
-                Profile.ArgFiles.Add(s);
+                CaptureControl.ArgFiles.Add(s);
 
-            return args.Any(File.Exists);
+            return CaptureControl.ArgFiles.Any();
         }
 
         #endregion

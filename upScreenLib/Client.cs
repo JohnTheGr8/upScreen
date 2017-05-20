@@ -169,15 +169,9 @@ namespace upScreenLib
 
         #region Members
 
-        public static bool FTP
-        {
-            get { return (Common.Profile.Protocol != FtpProtocol.SFTP); }
-        }
+        public static bool FTP => Common.Profile.Protocol != FtpProtocol.SFTP;
 
-        public static bool isConnected
-        {
-            get { return FTP ? ftpc.IsConnected : sftpc.IsConnected; }
-        }
+        public static bool isConnected => FTP ? ftpc.IsConnected : sftpc.IsConnected;
 
         public static string WorkingDirectory
         {
@@ -191,10 +185,7 @@ namespace upScreenLib
             }
         }
 
-        public static bool Exists(string path)
-        {
-            return FTP ? ftpc.FileExists(path) : sftpc.Exists(path);
-        }
+        public static bool Exists(string path) => FTP ? ftpc.FileExists(path) : sftpc.Exists(path);
 
         #endregion
     }

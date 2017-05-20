@@ -40,19 +40,10 @@ namespace upScreenLib
         public static bool FromFileMenu { get; set; }
 
         [JsonIgnore]
-        public static List<string> ArgFiles = new List<string>();
+        public string RemoteFolder => RemoteFolders[DefaultFolder].Folder;
 
         [JsonIgnore]
-        public string RemoteFolder
-        {
-            get { return RemoteFolders[DefaultFolder].Folder; }
-        }
-
-        [JsonIgnore]
-        public string RemoteHttpPath
-        {
-            get { return RemoteFolders[DefaultFolder].HttpPath; }
-        }
+        public string RemoteHttpPath => RemoteFolders[DefaultFolder].HttpPath;
 
         [JsonIgnore]
         public bool IsNotSet =>

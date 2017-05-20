@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading.Tasks;
 using upScreenLib.LogConsole;
-using System.Linq;
 
 namespace upScreenLib
 {
@@ -20,6 +19,9 @@ namespace upScreenLib
 
         // The screen which we're going to capture, defaults to the primary screen
         public static Screen CaptureScreen = Screen.PrimaryScreen;
+
+        // List of files passed in as arguements
+        public static List<string> ArgFiles = new List<string>();
 
         // All images captured in this session
         public static List<CapturedImage> CapturedImages = new List<CapturedImage>();
@@ -117,9 +119,9 @@ namespace upScreenLib
         /// </summary>
         public static void CaptureFromArgs()
         {
-            Log.Write(l.Info, $"Context menu mode: {Profile.ArgFiles.Count} files");
+            Log.Write(l.Info, $"Context menu mode: {ArgFiles.Count} files");
 
-            foreach (string filePath in Profile.ArgFiles)
+            foreach (string filePath in ArgFiles)
             {
                 Common.OtherFormOpen = true;
 
@@ -169,7 +171,7 @@ namespace upScreenLib
             var info = new CapturedImage
             {
                 Name = captureName,
-                LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + captureName),
+                LocalPath = Path.Combine(Settings.AppDataFolder, captureName),
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 
@@ -190,7 +192,7 @@ namespace upScreenLib
             var info = new CapturedImage
             {
                 Name = captureName,
-                LocalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen\" + captureName),
+                LocalPath = Path.Combine(Settings.AppDataFolder, captureName),
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 
