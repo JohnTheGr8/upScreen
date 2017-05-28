@@ -31,3 +31,11 @@ Write-Host "Path to generated nupkg: " $nupkg
 New-Alias squirrel $ProjectDir\packages\squirrel.windows*\tools\Squirrel.exe -Force
 
 squirrel --releasify $nupkg --setupIcon $icon --icon $icon --no-msi | Write-Output
+
+# Rename setup file
+
+$setup = $TargetDir + "Releases\Setup.exe"
+$newSetup = $TargetDir + "Releases\upScreen-$version-Setup.exe"
+
+Move-Item $setup $newSetup -Force
+Write-Host "Setup path: " $newSetup
