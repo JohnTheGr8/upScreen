@@ -1,0 +1,16 @@
+version: 1.7.1.{build}
+
+platform: Any CPU
+
+configuration: Release
+
+before_build:
+  - nuget restore
+
+artifacts:
+  - path: 'upScreen\bin\Release\Release\*.exe'
+    name: Setup
+  - path: 'upScreen\bin\Release\Release\RELEASES'
+    name: Releases
+  - path: 'upScreen\bin\Release\Release\*.nupkg'
+    name: NugetPackage
