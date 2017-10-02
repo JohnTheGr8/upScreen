@@ -19,6 +19,8 @@ namespace upScreenLib
 
         public List<RemoteFolder> RemoteFolders = new List<RemoteFolder>();
 
+        public string TrustedCertificate;
+
         [JsonConverter(typeof(StringEnumConverter))]
         public ImageExtensions Extension = ImageExtensions.PNG;
 
@@ -61,7 +63,7 @@ namespace upScreenLib
             Host = host;
             Username = user;
             Password = pass;
-            Port = port;           
+            Port = port;
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace upScreenLib
 
         [Obsolete("Not used anymore")]
         public List<string> RemotePaths = new List<string>();
-        
+
         [Obsolete("Not used anymore")]
         public string HttpPath;
     }

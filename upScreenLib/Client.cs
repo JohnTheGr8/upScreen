@@ -5,6 +5,7 @@ using FluentFTP;
 using Renci.SshNet;
 using System.Collections.Generic;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Renci.SshNet.Async;
 using upScreenLib.LogConsole;
@@ -17,6 +18,8 @@ namespace upScreenLib
         private static FtpClient ftpc;
 
         public static Task<bool> taskCheckAccount = TryConnect();
+
+        public static event EventHandler<ValidateCertificateEventArgs> ValidateCertificate;
 
         #region Functions
 
@@ -31,16 +34,42 @@ namespace upScreenLib
             if (FTP)
             {
                 ftpc = new FtpClient(Common.Profile.Host, Common.Profile.Username, Common.Profile.Password);
+
+                // Check if the server returned certificate is valid
+                ftpc.ValidateCertificate += (o, e) =>
+                {
+                    var thumbprint = new X509Certificate2(e.Certificate).Thumbprint;
+
+                    if (Common.Profile.TrustedCertificate == thumbprint)
+                    {
+                        Log.Write(l.Client, $"Valid certificate: {thumbprint}");
+                        e.Accept = true;
+                    }
+                    else if (ValidateCertificate != null)
+                    {
+                        var args = (ValidateCertificateEventArgs)e;
+                        // Prompt user to validate
+                        ValidateCertificate(null, args);
+                        e.Accept = args.IsTrusted;
+                    }
+                    else
+                    {
+                        e.Accept = false;
+                    }
+                };
+
                 ftpc.Port = Common.Profile.Port;
+
+                // Set encryption mode
+                ftpc.EncryptionMode = (FtpEncryptionMode)Common.Profile.FtpsInvokeMethod;
+                Log.Write(l.Client, $"Encryption mode: {ftpc.EncryptionMode}");
 
                 switch (Common.Profile.FtpsInvokeMethod)
                 {
                     case FtpsMethod.Explicit:
                     case FtpsMethod.Implicit:
-                        ftpc.EncryptionMode = (FtpEncryptionMode) Common.Profile.FtpsInvokeMethod;
-                        ftpc.SslProtocols = SslProtocols.Default;
-                        //todo: what about e.PolicyErrors 
-                        ftpc.ValidateCertificate += (o, e) => e.Accept = true;
+                        //todo: what about e.PolicyErrors
+                        ftpc.SslProtocols = SslProtocols.Tls11 | SslProtocols.Tls12;
                         break;
                     default:
                         ftpc.SslProtocols = SslProtocols.None;
@@ -160,5 +189,33 @@ namespace upScreenLib
         public static bool Exists(string path) => FTP ? ftpc.FileExists(path) : sftpc.Exists(path);
 
         #endregion
+    }
+
+    public class ValidateCertificateEventArgs : EventArgs
+    {
+        public string Fingerprint;
+
+        // FTPS info
+        public string SerialNumber;
+        public string Algorithm;
+        public string Issuer;
+        public string ValidFrom;
+        public string ValidTo;
+
+        // Trust the certificate?
+        public bool IsTrusted;
+
+        public static explicit operator ValidateCertificateEventArgs(FtpSslValidationEventArgs e)
+        {
+            return new ValidateCertificateEventArgs
+            {
+                Fingerprint = ((X509Certificate2)e.Certificate).Thumbprint,
+                SerialNumber = e.Certificate.GetSerialNumberString(),
+                Algorithm = e.Certificate.GetKeyAlgorithmParametersString(),
+                ValidFrom = e.Certificate.GetEffectiveDateString(),
+                ValidTo = e.Certificate.GetExpirationDateString(),
+                Issuer = e.Certificate.Issuer
+            };
+        }
     }
 }

@@ -27,7 +27,8 @@ namespace upScreen.Forms
         private async void frmAddAccount_Load(object sender, EventArgs e)
         {
             cMode.SelectedIndex = 0;
-            
+            cConnectionOptions.SelectedIndex = 0;
+
             if (_pickingFolders)
             {
                 this.Text = "Pick Folders";
@@ -63,6 +64,8 @@ namespace upScreen.Forms
         {
             // Change to default port number, based on 
             nPort.Value = cMode.SelectedIndex == 0 ? 21 : 22;
+            // Disable for SFTP (for now)
+            cConnectionOptions.Enabled = (cMode.SelectedIndex == 0);
         }
 
         private async void bTest_Click(object sender, EventArgs e)
@@ -76,6 +79,26 @@ namespace upScreen.Forms
                 // Try connecting with the given account info
                 Common.Profile.AddAccount(tHost.Text, tUsername.Text, tPassword.Text, Convert.ToInt32(nPort.Value));
                 Common.Profile.Protocol = _ftpOrSftp ? FtpProtocol.FTP : FtpProtocol.SFTP;
+                Common.Profile.FtpsInvokeMethod = (FtpsMethod)cConnectionOptions.SelectedIndex;
+                
+                Client.ValidateCertificate += (o, n) =>
+                {
+                    // Add certificate info
+                    var msg = string.Format("{0,-25}\t {1}\n{2,-25}\t {3}\n{4,-25}\t {5}\n{6,-25}\t {7}\n\n",
+                            "Valid from:", n.ValidFrom, "Valid to:", n.ValidTo, "Serial number:", n.SerialNumber, "Algorithm:", n.Algorithm);
+
+                    msg += string.Format("Fingerprint: {0}\n\n", n.Fingerprint);
+                    msg += "Trust this certificate and continue?";
+
+                    // Ask to trust the server certificate
+                    var certificateTrustedResult = MessageBox.Show(msg, "Do you trust this certificate?", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    n.IsTrusted = certificateTrustedResult == DialogResult.Yes;
+
+                    if (certificateTrustedResult == DialogResult.Yes)
+                    {
+                        Common.Profile.TrustedCertificate = n.Fingerprint;
+                    }
+                };
 
                 await Client.Connect();
 
