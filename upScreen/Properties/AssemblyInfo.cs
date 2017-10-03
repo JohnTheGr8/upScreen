@@ -11,7 +11,7 @@ using System.Resources;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("getupscreen.com")]
 [assembly: AssemblyProduct("upScreen")]
-[assembly: AssemblyCopyright("Copyright ©  2011-2013")]
+[assembly: AssemblyCopyright("Copyright © 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,6 +33,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.6.1.1")]
-[assembly: AssemblyFileVersion("1.6.1.1")]
+[assembly: AssemblyVersion("1.7.1.1")]
+[assembly: AssemblyFileVersion("1.7.1.1")]
 [assembly: NeutralResourcesLanguageAttribute("en")]

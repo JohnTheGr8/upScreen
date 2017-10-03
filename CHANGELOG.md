@@ -1,6 +1,12 @@
 Changelog
 ========
 
+## Version 1.7
+- Connect with FTP over SSL (FTPS)
+- Public Key Authentication
+- Configurable default values for "open link in browser" and "copy link to clipboard" (#2)
+- Capture multiple files copied to clipboard
+
 ## Version 1.6
 - Multiple monitor support
 - Capture image from a copied URL
