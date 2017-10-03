@@ -72,6 +72,12 @@ namespace upScreen.Forms
                 cConnectionOptions.Items.Clear();
                 cConnectionOptions.Items.AddRange(new[] { "Use plain FTP", "Require implicit FTP over TLS", "Require explicit FTP over TLS" });
                 cConnectionOptions.SelectedIndex = 0;
+
+                // clear the field when changing between key-auth and pass-auth
+                if (cConnectionOptions.SelectedIndex == 1)
+                {
+                    tPassword.Text = string.Empty;
+                }
             }
             else
             {
@@ -115,6 +121,8 @@ namespace upScreen.Forms
                         Common.Profile.TrustedCertificate = n.Fingerprint;
                     }
                 };
+
+                gPaths.Enabled = false;
 
                 await Client.Connect();
 
@@ -182,7 +190,7 @@ namespace upScreen.Forms
 
         private async void tFolderTree_AfterExpand(object sender, TreeViewEventArgs e)
         {
-            string path = "/" + e.Node.FullPath.Replace('\\', '/');
+            string path = "./" + e.Node.FullPath.Replace('\\', '/');
             // Clear all child nodes
             if (e.Node.Nodes.Count > 0)
                 e.Node.Nodes.Clear();
@@ -295,9 +303,16 @@ namespace upScreen.Forms
             {
                 folder = Path.Combine(folder, ".ssh");
             }
-            var ofd = new OpenFileDialog() { InitialDirectory = folder, Multiselect = false };
 
-            if (ofd.ShowDialog() != DialogResult.OK)
+            // ask user to locate the key file
+            var ofd = new OpenFileDialog() { InitialDirectory = folder, Multiselect = false };
+            var result = ofd.ShowDialog();
+
+            if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+            else if (result != DialogResult.OK)
             {
                 tPassword.Text = string.Empty;
                 return;
@@ -324,6 +339,12 @@ namespace upScreen.Forms
                 tPassword.PasswordChar = '●';
                 tPassword.Width = 231;
                 label2.Text = "Password:";
+            }
+
+            // clear the field when changing between key-auth and pass-auth
+            if (cMode.SelectedIndex == 1)
+            {
+                tPassword.Text = string.Empty;
             }
         }
     }
