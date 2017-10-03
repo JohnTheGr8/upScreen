@@ -49,6 +49,7 @@
             this.tHttpPath = new System.Windows.Forms.TextBox();
             this.tFolderTree = new System.Windows.Forms.TreeView();
             this.bCancel = new System.Windows.Forms.Button();
+            this.bBrowseKey = new System.Windows.Forms.Button();
             this.gAccount.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nPort)).BeginInit();
             this.gPaths.SuspendLayout();
@@ -58,6 +59,7 @@
             // 
             this.gAccount.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.gAccount.Controls.Add(this.bBrowseKey);
             this.gAccount.Controls.Add(this.cConnectionOptions);
             this.gAccount.Controls.Add(this.label1);
             this.gAccount.Controls.Add(this.label6);
@@ -90,6 +92,7 @@
             this.cConnectionOptions.Name = "cConnectionOptions";
             this.cConnectionOptions.Size = new System.Drawing.Size(156, 21);
             this.cConnectionOptions.TabIndex = 1;
+            this.cConnectionOptions.SelectedIndexChanged += new System.EventHandler(this.cConnectionOptions_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -210,7 +213,7 @@
             this.tPassword.Location = new System.Drawing.Point(99, 130);
             this.tPassword.Name = "tPassword";
             this.tPassword.PasswordChar = '●';
-            this.tPassword.Size = new System.Drawing.Size(231, 20);
+            this.tPassword.Size = new System.Drawing.Size(172, 20);
             this.tPassword.TabIndex = 5;
             // 
             // tUsername
@@ -288,6 +291,17 @@
             this.bCancel.UseVisualStyleBackColor = true;
             this.bCancel.Click += new System.EventHandler(this.bCancel_Click);
             // 
+            // bBrowseKey
+            // 
+            this.bBrowseKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.bBrowseKey.Location = new System.Drawing.Point(277, 128);
+            this.bBrowseKey.Name = "bBrowseKey";
+            this.bBrowseKey.Size = new System.Drawing.Size(53, 23);
+            this.bBrowseKey.TabIndex = 62;
+            this.bBrowseKey.Text = "...";
+            this.bBrowseKey.UseVisualStyleBackColor = true;
+            this.bBrowseKey.Click += new System.EventHandler(this.bBrowseKey_Click);
+            // 
             // frmAddAccount
             // 
             this.AcceptButton = this.bTest;
@@ -339,5 +353,6 @@
         private System.Windows.Forms.Button bCancel;
         private System.Windows.Forms.ComboBox cConnectionOptions;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button bBrowseKey;
     }
 }

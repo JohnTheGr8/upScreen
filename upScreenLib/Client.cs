@@ -79,8 +79,11 @@ namespace upScreenLib
             }
             else
             {
-                sftpc = new SftpClient(Common.Profile.Host, Common.Profile.Port, 
-                        Common.Profile.Username, Common.Profile.Password);
+                var cInfo = (!string.IsNullOrEmpty(Common.Profile.KeyFilePath) && File.Exists(Common.Profile.KeyFilePath))
+                    ? new PrivateKeyConnectionInfo(Common.Profile.Host, Common.Profile.Port, Common.Profile.Username, new PrivateKeyFile(Common.Profile.KeyFilePath)) as ConnectionInfo
+                    : new PasswordConnectionInfo(Common.Profile.Host, Common.Profile.Port, Common.Profile.Username, Common.Profile.Password) as ConnectionInfo;
+
+                sftpc = new SftpClient(cInfo);
 
                 // ugly but eh
                 await Task.Run(async () => sftpc.Connect());

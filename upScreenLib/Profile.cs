@@ -21,6 +21,8 @@ namespace upScreenLib
 
         public string TrustedCertificate;
 
+        public string KeyFilePath;
+
         [JsonConverter(typeof(StringEnumConverter))]
         public ImageExtensions Extension = ImageExtensions.PNG;
 

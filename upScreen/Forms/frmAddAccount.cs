@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,6 +16,8 @@ namespace upScreen.Forms
         public static bool _pickingFolders = false;
 
         public static bool _updatingAccount = false;
+
+        private string _privateKey = null;
 
         // Dictionary of cheked folders and their respective http paths
         private Dictionary<string, string> RemotePathsDictionary = new Dictionary<string, string>();
@@ -62,10 +65,22 @@ namespace upScreen.Forms
 
         private void cMode_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Change to default port number, based on 
-            nPort.Value = cMode.SelectedIndex == 0 ? 21 : 22;
-            // Disable for SFTP (for now)
-            cConnectionOptions.Enabled = (cMode.SelectedIndex == 0);
+            if (cMode.SelectedIndex == 0)
+            {
+                nPort.Value = 21;
+                label1.Text = "Encryption:";
+                cConnectionOptions.Items.Clear();
+                cConnectionOptions.Items.AddRange(new[] { "Use plain FTP", "Require implicit FTP over TLS", "Require explicit FTP over TLS" });
+                cConnectionOptions.SelectedIndex = 0;
+            }
+            else
+            {
+                nPort.Value = 22;
+                label1.Text = "Authentication:";
+                cConnectionOptions.Items.Clear();
+                cConnectionOptions.Items.AddRange(new [] { "Normal", "Public Key" });
+                cConnectionOptions.SelectedIndex = 0;
+            }
         }
 
         private async void bTest_Click(object sender, EventArgs e)
@@ -80,7 +95,8 @@ namespace upScreen.Forms
                 Common.Profile.AddAccount(tHost.Text, tUsername.Text, tPassword.Text, Convert.ToInt32(nPort.Value));
                 Common.Profile.Protocol = _ftpOrSftp ? FtpProtocol.FTP : FtpProtocol.SFTP;
                 Common.Profile.FtpsInvokeMethod = (FtpsMethod)cConnectionOptions.SelectedIndex;
-                
+                Common.Profile.KeyFilePath = _privateKey;
+
                 Client.ValidateCertificate += (o, n) =>
                 {
                     // Add certificate info
@@ -270,6 +286,45 @@ namespace upScreen.Forms
                 path = path.Substring(0, path.Length - 1);
 
             return path;
+        }
+
+        private void bBrowseKey_Click(object sender, EventArgs e)
+        {
+            var folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (Directory.Exists(Path.Combine(folder, ".ssh")))
+            {
+                folder = Path.Combine(folder, ".ssh");
+            }
+            var ofd = new OpenFileDialog() { InitialDirectory = folder, Multiselect = false };
+
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                tPassword.Text = string.Empty;
+                return;
+            }
+
+            _privateKey = ofd.FileName;
+            tPassword.Text = _privateKey;
+        }
+
+        private void cConnectionOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cMode.SelectedIndex == 1 && cConnectionOptions.SelectedIndex == 1)
+            {
+                bBrowseKey.Visible = true;
+                tPassword.Enabled = false;
+                tPassword.PasswordChar = '\0';
+                tPassword.Width = 172;
+                label2.Text = "Key File:";
+            }
+            else
+            {
+                bBrowseKey.Visible = false;
+                tPassword.Enabled = true;
+                tPassword.PasswordChar = '●';
+                tPassword.Width = 231;
+                label2.Text = "Password:";
+            }
         }
     }
 }
