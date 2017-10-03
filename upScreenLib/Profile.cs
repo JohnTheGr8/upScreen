@@ -65,25 +65,8 @@ namespace upScreenLib
             Host = host;
             Username = user;
             Password = pass;
-            Port = port;
+            Port = port;           
         }
-
-        /// <summary>
-        /// Convert from the old RemotePaths that only contained folders.
-        /// This is only for compatibility reasons with older config files.
-        /// </summary>
-        [OnDeserialized]
-        internal void OnDeserializedConvertRemotePaths(StreamingContext context)
-        {
-            if (RemotePaths.Count > 0 && RemoteFolders.Count <= 0)
-                RemoteFolders.Add(new RemoteFolder(RemotePaths[0], HttpPath));
-        }
-
-        [Obsolete("Not used anymore")]
-        public List<string> RemotePaths = new List<string>();
-
-        [Obsolete("Not used anymore")]
-        public string HttpPath;
     }
 
     public class RemoteFolder
