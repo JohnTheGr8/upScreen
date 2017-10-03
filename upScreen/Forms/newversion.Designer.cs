@@ -149,7 +149,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "upScreen | Update Available";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.newversion_FormClosing);
-            this.Load += new System.EventHandler(this.newversion_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

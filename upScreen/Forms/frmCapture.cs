@@ -9,8 +9,8 @@ using upScreenLib.LogConsole;
 using upScreen.Forms;
 using upScreenLib;
 using System.Collections.Generic;
-using System.Net;
 using System.IO;
+using Squirrel;
 
 namespace upScreen
 {
@@ -318,24 +318,25 @@ namespace upScreen
 
         private async Task CheckUpdateAsync()
         {
-            try
+            using (var updateManager = new UpdateManager("https://getupscreen.com/releases"))
             {
-                var client = new WebClient();
-                var address = "http://getupscreen.com/version.txt";
-                var version = await client.DownloadStringTaskAsync(address);
+                var info = await updateManager.CheckForUpdate();
 
-                Log.Write(l.Debug, "Current Version: {0} Installed Version: {1}", version, Application.ProductVersion);
-
-                if (version != Application.ProductVersion)
+                if (info.CurrentlyInstalledVersion == null || info.FutureReleaseEntry == null)
+                    return;
+                
+                Log.Write(l.Debug, $"Current Version: {info.CurrentlyInstalledVersion.Version} Installed Version: {info.FutureReleaseEntry.Version}");
+                
+                if (info.FutureReleaseEntry.Version > info.CurrentlyInstalledVersion.Version)
                 {
                     // show dialog box for download now, learn more and remind me next time
-                    newversion nvform = new newversion(version) { Tag = this };
+                    newversion nvform = new newversion(info.CurrentlyInstalledVersion.Version.ToString(), info.FutureReleaseEntry.Version.ToString());
                     nvform.ShowDialog();
+
+                    Log.Write(l.Debug, "time to update");
+
+                    await updateManager.UpdateApp();
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Write(l.Debug, "Error with version checking: {0}", ex.Message);
             }
         }
 

@@ -1,42 +1,30 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Diagnostics;
 using upScreenLib;
 
 namespace upScreen
 {
     public partial class newversion : Form
     {
-        private readonly string _newVers;
+        bool _updating;
 
-        public newversion(string newv)
+        public newversion(string oldv, string newv)
         {
             InitializeComponent();
-            _newVers = newv;
-        }
 
-        private void newversion_Load(object sender, EventArgs e)
-        {
-            lCurrentVersion.Text = Application.ProductVersion.Substring(0, 5);
-            lNewVersion.Text = _newVers.Substring(0, 5);
+            lCurrentVersion.Text = oldv;
+            lNewVersion.Text = newv;
         }
 
         private void bDownload_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string updaterPath = Application.StartupPath + @"\updater.exe";
-                var pi = new ProcessStartInfo(updaterPath) {Verb = "runas"};
-                Process.Start(pi);
-            }
-            catch { }
-
-            Common.KillProcess();
+            _updating = true;
+            Close();
         }
 
         private void bLearnMore_Click(object sender, EventArgs e)
         {
-            Common.ViewInBrowser("http://getupscreen.com");
+            Common.ViewInBrowser("https://github.com/JohnTheGr8/upScreen/blob/master/CHANGELOG.md");
             Common.KillProcess();
         }
 
@@ -47,7 +35,10 @@ namespace upScreen
 
         private void newversion_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Common.KillProcess();
+            if (!_updating)
+            {
+                Common.KillProcess();
+            }
         }
     }
 }
