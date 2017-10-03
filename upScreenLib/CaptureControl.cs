@@ -171,7 +171,7 @@ namespace upScreenLib
             var info = new CapturedImage
             {
                 Name = captureName,
-                LocalPath = Path.Combine(Settings.AppDataFolder, captureName),
+                LocalPath = Path.Combine(Settings.TempImageFolder, captureName),
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 
@@ -192,7 +192,7 @@ namespace upScreenLib
             var info = new CapturedImage
             {
                 Name = captureName,
-                LocalPath = Path.Combine(Settings.AppDataFolder, captureName),
+                LocalPath = Path.Combine(Settings.TempImageFolder, captureName),
                 RemotePath = Common.Combine(Common.Profile.RemoteFolder, captureName)
             };
 

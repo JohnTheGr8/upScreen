@@ -8,7 +8,8 @@ namespace upScreenLib
 {
     public static class Settings
     {
-        public static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"upScreen");
+        public static readonly string AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "upScreen");
+        public static readonly string TempImageFolder = Path.Combine(AppDataFolder, "images");
         private static readonly string ConfigPath = Path.Combine(AppDataFolder, "settings.json");
 
         public static List<Profile> Profiles = new List<Profile>();
@@ -25,8 +26,11 @@ namespace upScreenLib
         public static void Load()
         {
             Common.Profile = new Profile();
-            // check for existing config file
+            
             if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
+            if (!Directory.Exists(TempImageFolder)) Directory.CreateDirectory(TempImageFolder);
+
+            // check for existing config file
             if (!File.Exists(ConfigPath)) return;
             // if existing config file exists, load it to _profiles
             string config = File.ReadAllText(ConfigPath);
