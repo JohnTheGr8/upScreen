@@ -5,7 +5,11 @@ platform: Any CPU
 configuration: Release
 
 before_build:
-  - nuget restore
+  - nuget restore upScreen\upScreen.sln
+
+build:
+  project: upScreen\upScreen.sln
+  verbosity: normal
 
 artifacts:
   - path: 'upScreen\bin\Release\Release\*.exe'
