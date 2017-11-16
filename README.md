@@ -1,8 +1,9 @@
-upScreen
+upScreen [![Build status](https://ci.appveyor.com/api/projects/status/3mxesarcx888e91o?svg=true)](https://ci.appveyor.com/project/JohnTheGr8/upscreen)
 =====
 
-About
------
+[Changelog][changelog] | [GPLv3][gpl] | [Issues][issues]
+
+### About
 
 Easily capture your screen and upload the image to your own server.
 
@@ -18,29 +19,15 @@ Easily capture your screen and upload the image to your own server.
 - Copy image link to clipboard
 - Multiple monitor support
 
-### License
+### Dependencies
 
-Licensed under the [General Public License v3][gpl]
-
-### Credits
-
-upScreen uses the following awesome libraries:
-- [FluentFTP][fluentftp] : The FTP library
-- [SSH.NET][sshnet] : The SFTP library
-- [Renci.SshNet.Async][sshnetasync] : Async extensions for SSH.NET
-- [Json.NET][jsonnet] : The json library used for the configuration file
-- [Squirrel.Windows][squirrel] : Installation/update tool
-
-Development
------
-
-### Issues - Requests
-
-Check the [Issues][issues] page.
-
-### Changelog
-
-See [Changelog.md][changelog]
+| Library                           | Description                                      | License   |
+|:---------------------------------:|:-------------------------------------------------|:---------:|
+| [FluentFTP][fluentftp]            | The FTP library                                  | MIT       |
+| [SSH.NET][sshnet]                 | The SFTP library                                 | MIT       |
+| [Json.NET][jsonnet]               | The json library used for the configuration file | MIT       |
+| [Squirrel.Windows][squirrel]      | Installation/update tool                         | MIT       |
+| [Renci.SshNet.Async][sshnetasync] | Async extensions for SSH.NET                     | MIT       |
 
 [fluentftp]: https://github.com/hgupta9/FluentFTP/
 [sshnet]: https://github.com/sshnet/SSH.NET/
