@@ -1,13 +1,12 @@
-# The following parameters should be passed from Visual Studio
+# Define Variables
 
-param (
-    [string]$Name,
-    [string]$ProjectDir,
-    [string]$TargetDir,
-    [string]$TargetPath
-)
+$Name       = "upScreen"
+$ProjectDir = (Resolve-Path .\).Path + "\upScreen\"
+$TargetDir  = $ProjectDir + "bin\Release\"
 
 # Load built assembly and get the version
+
+$TargetPath = "$TargetDir$Name.exe"
 
 $assembly = [System.Reflection.Assembly]::LoadFile($TargetPath)
 $v = $assembly.GetName().Version;
@@ -15,7 +14,7 @@ $version = [string]::Format("{0}.{1}.{2}",$v.Major, $v.Minor, $v.Build)
 
 # NuGet pack
 
-$nuspec = "$ProjectDir$Name.nuspec"
+$nuspec = $ProjectDir + "upScreen.nuspec"
 Write-Host "Path to nuspec file: " $nuspec
 
 nuget pack $nuspec -Version $version -Properties Configuration=Release -OutputDirectory $TargetDir -BasePath $TargetDir
@@ -25,7 +24,7 @@ nuget pack $nuspec -Version $version -Properties Configuration=Release -OutputDi
 $icon = $ProjectDir + "upscreen.ico"
 Write-Host "Path to ico file: " $icon
 
-$nupkg = "upScreen.$version.nupkg"
+$nupkg = "$TargetDir$Name.$version.nupkg"
 Write-Host "Path to generated nupkg: " $nupkg
 
 New-Alias squirrel $ProjectDir\packages\squirrel.windows*\tools\Squirrel.exe -Force
@@ -34,8 +33,8 @@ squirrel --releasify $nupkg --setupIcon $icon --icon $icon --no-msi | Write-Outp
 
 # Rename setup file
 
-$setup = $TargetDir + "Releases\Setup.exe"
-$newSetup = $TargetDir + "Releases\upScreen-$version-Setup.exe"
+$setup = "Releases\Setup.exe"
+$newSetup = "Releases\upScreen-$version-Setup.exe"
 
 Move-Item $setup $newSetup -Force
 Write-Host "Setup path: " $newSetup

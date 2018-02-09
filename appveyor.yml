@@ -1,4 +1,4 @@
-version: 1.7.1.{build}
+version: 1.7.2.{build}
 
 platform: Any CPU
 
@@ -7,14 +7,17 @@ configuration: Release
 before_build:
   - nuget restore upScreen\upScreen.sln
 
+after_build:
+  - ps: pack.ps1
+
 build:
   project: upScreen\upScreen.sln
   verbosity: normal
 
 artifacts:
-  - path: 'bin\Release\Releases\*.exe'
+  - path: 'Releases\*.exe'
     name: Setup
-  - path: 'bin\Release\Releases\RELEASES'
+  - path: 'Releases\RELEASES'
     name: Releases
-  - path: 'bin\Release\Releases\*.nupkg'
+  - path: 'Releases\*.nupkg'
     name: NugetPackage
