@@ -12,9 +12,9 @@ build:
   verbosity: normal
 
 artifacts:
-  - path: 'upScreen\bin\Release\Releases\*.exe'
+  - path: 'bin\Release\Releases\*.exe'
     name: Setup
-  - path: 'upScreen\bin\Release\Releases\RELEASES'
+  - path: 'bin\Release\Releases\RELEASES'
     name: Releases
-  - path: 'upScreen\bin\Release\Releases\*.nupkg'
+  - path: 'bin\Release\Releases\*.nupkg'
     name: NugetPackage
