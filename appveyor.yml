@@ -8,7 +8,7 @@ before_build:
   - nuget restore upScreen\upScreen.sln
 
 after_build:
-  - ps: pack.ps1
+  - ps: .\pack.ps1
 
 build:
   project: upScreen\upScreen.sln
