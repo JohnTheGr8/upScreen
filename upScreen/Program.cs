@@ -16,6 +16,9 @@ namespace upScreen
         [STAThread]
         static void Main(string[] args)
         {
+            if (Environment.OSVersion.Version.Major >= 6)
+                SetProcessDPIAware();
+
             // Allocate console
             if (args.Length > 0 && args.Contains("-console"))
                 aConsole.Allocate();
@@ -37,6 +40,9 @@ namespace upScreen
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new frmCapture());
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
 
         #region Context Menus
 
