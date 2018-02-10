@@ -1,6 +1,12 @@
 Changelog
 ========
 
+## Version 1.7.2
+
+- Fix blurry forms on high DPI monitors
+- Increase maximum file length
+- Update all dependencies
+
 ## Version 1.7
 - Connect with FTP over SSL (FTPS)
 - Public Key Authentication
