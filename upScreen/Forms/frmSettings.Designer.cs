@@ -73,7 +73,7 @@
             // 
             this.nLenght.Location = new System.Drawing.Point(92, 45);
             this.nLenght.Maximum = new decimal(new int[] {
-            10,
+            1000,
             0,
             0,
             0});
@@ -86,7 +86,7 @@
             this.nLenght.Size = new System.Drawing.Size(57, 20);
             this.nLenght.TabIndex = 1;
             this.nLenght.Value = new decimal(new int[] {
-            5,
+            10,
             0,
             0,
             0});
